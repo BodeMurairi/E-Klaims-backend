@@ -1,6 +1,5 @@
 psycopg2-binary
 fastapi[standard]
-uvicorn[standard]
 sqlalchemy
 pydantic
 alembic
