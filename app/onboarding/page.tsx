@@ -41,7 +41,7 @@ interface UploadedFile {
 
 // ─── Chatbot state machine ────────────────────────────────────────────────────
 
-type ChatPhase = "greeting" | "questioning" | "quoting" | "confirmed";
+type ChatPhase = "greeting" | "product_intro" | "questioning" | "quoting" | "confirmed";
 
 interface Quote {
   premium: number;
@@ -67,12 +67,22 @@ interface ChatMessage {
 
 // ─── Product question flows ───────────────────────────────────────────────────
 
+const MENU_FOOTER = "\n\nType **Menu** to return to the Main Menu\nType **Exit** to end this chat";
+
 const PRODUCT_LABELS: Record<string, string> = {
   motor: "Motor Insurance",
   health: "Health Insurance",
   property: "Property Insurance",
   life: "Life Insurance",
   travel: "Travel Insurance",
+};
+
+const PRODUCT_INTROS: Record<string, string> = {
+  motor: "Our **Motor Insurance** policy protects you against financial loss in the event that your vehicle, its accessories or spare parts are stolen or damaged in an accident, fire, riot or strikes.",
+  health: "Our **Health Insurance** plan gives you and your family access to quality healthcare, covering hospitalisation, outpatient treatment, and specialist consultations.",
+  property: "Our **Property Insurance** policy protects your building and its contents against damage from fire, flooding, theft and other insured perils.",
+  life: "Our **Life Insurance** plan ensures your loved ones are financially protected in the event of your passing, with a lump-sum payout to your named beneficiaries.",
+  travel: "Our **Travel Insurance** policy covers medical emergencies, trip cancellations, lost luggage and other unexpected events while you are travelling outside Rwanda.",
 };
 
 interface Question {
@@ -85,164 +95,149 @@ const PRODUCT_QUESTIONS: Record<string, Question[]> = {
   motor: [
     {
       key: "coverType",
-      ask: () => "What type of motor cover are you looking for?",
-      quickReplies: ["Comprehensive", "Third Party Only", "Third Party, Fire & Theft"],
-    },
-    {
-      key: "make",
-      ask: () => "What is the **make** of your vehicle? _(e.g. Toyota, Nissan, BMW)_",
-    },
-    {
-      key: "model",
-      ask: (a) => `What is the **model** of your ${a.make}? _(e.g. Corolla, Harrier, X5)_`,
-    },
-    {
-      key: "year",
-      ask: (a) => `What **year** was your ${a.make} ${a.model} manufactured?`,
-    },
-    {
-      key: "registration",
-      ask: () => "What is the vehicle's **registration number**?",
+      ask: () => "Please select your preferred policy:\n\n1. **Comprehensive Motor (Rate 4.5%)**\n2. **Third Party Fire & Theft (Rate 3%)**\n3. **Third Party Only (Rate 0.5%)**",
+      quickReplies: ["1. Comprehensive Motor", "2. Third Party Fire & Theft", "3. Third Party Only"],
     },
     {
       key: "usage",
-      ask: () => "How will the vehicle be used?",
-      quickReplies: ["Private", "Commercial", "PSV / Taxi"],
+      ask: () => "What will the vehicle be used for?\n\n1. **Private use**\n2. **Commercial purposes**\n3. **Agricultural Vehicle**\n4. **Motorcycle**",
+      quickReplies: ["1. Private use", "2. Commercial purposes", "3. Agricultural Vehicle", "4. Motorcycle"],
+    },
+    {
+      key: "make",
+      ask: () => "What is the **make** of your vehicle?\n_(e.g. Toyota, Nissan, BMW)_",
+    },
+    {
+      key: "model",
+      ask: (a) => `What is the **model** of your ${a.make}?\n_(e.g. Corolla, Harrier, X5)_`,
+    },
+    {
+      key: "year",
+      ask: (a) => `What **year** was your ${a.make} ${a.model} manufactured?\n_(e.g. 2019)_`,
+    },
+    {
+      key: "registration",
+      ask: () => "What is the vehicle's **registration number**?\n_(e.g. RAB 123A)_",
     },
     {
       key: "value",
-      ask: (a) =>
-        `What is the current **market value** of your ${a.make} ${a.model} in RWF?\n_(This is the amount it would cost to replace the vehicle today)_`,
+      ask: (a) => `What is the current market value of your ${a.make} ${a.model} in RWF?\n_(e.g. RWF 10,000,000)_`,
     },
   ],
   travel: [
     {
       key: "destination",
-      ask: () => "Which **country or countries** are you traveling to?",
+      ask: () => "Which country or countries are you travelling to?\n_(e.g. Kenya, France, USA)_",
     },
     {
       key: "region",
-      ask: (a) =>
-        `Which coverage plan suits your trip to **${a.destination}**?`,
-      quickReplies: ["Africa / Asia", "Europe Basic", "Europe Plus", "Worldwide Basic", "Worldwide Silver", "Worldwide Gold"],
+      ask: (a) => `Which coverage plan suits your trip to **${a.destination}**?\n\n1. **Africa / Asia**\n2. **Europe Basic**\n3. **Europe Plus**\n4. **Worldwide Basic**\n5. **Worldwide Silver**\n6. **Worldwide Gold**`,
+      quickReplies: ["1. Africa / Asia", "2. Europe Basic", "3. Europe Plus", "4. Worldwide Basic", "5. Worldwide Silver", "6. Worldwide Gold"],
     },
     {
       key: "departure",
-      ask: () => "What is your **departure date**? _(DD/MM/YYYY)_",
+      ask: () => "What is your departure date?\n_(DD/MM/YYYY — e.g. 15/04/2026)_",
     },
     {
       key: "returnDate",
-      ask: () => "What is your **return date**? _(DD/MM/YYYY)_",
+      ask: () => "What is your return date?\n_(DD/MM/YYYY — e.g. 29/04/2026)_",
     },
     {
       key: "purpose",
-      ask: () => "What is the **purpose** of your travel?",
-      quickReplies: ["Business", "Leisure / Holiday", "Medical", "Education", "Other"],
-    },
-    {
-      key: "mode",
-      ask: () => "What is your **mode of travel**?",
-      quickReplies: ["Air", "Land", "Sea"],
+      ask: () => "What is the purpose of your travel?\n\n1. **Business**\n2. **Leisure / Holiday**\n3. **Medical**\n4. **Education**\n5. **Other**",
+      quickReplies: ["1. Business", "2. Leisure / Holiday", "3. Medical", "4. Education", "5. Other"],
     },
     {
       key: "preExisting",
-      ask: () =>
-        "Do you have any **pre-existing medical conditions** or are you currently undergoing treatment?",
-      quickReplies: ["Yes", "No"],
+      ask: () => "Do you have any pre-existing medical conditions or are you currently undergoing treatment?\n\n1. **Yes**\n2. **No**",
+      quickReplies: ["1. Yes", "2. No"],
     },
     {
       key: "nextOfKin",
-      ask: () =>
-        "Who is your **next of kin**? Please provide their name and phone number.",
+      ask: () => "Who is your next of kin?\n_(Please provide their name and phone number)_",
     },
   ],
   health: [
     {
       key: "dob",
-      ask: () => "What is your **date of birth**? _(DD/MM/YYYY)_",
+      ask: () => "What is your date of birth?\n_(DD/MM/YYYY — e.g. 01/05/1990)_",
     },
     {
       key: "occupation",
-      ask: () => "What is your **occupation**?",
+      ask: () => "What is your occupation?\n_(e.g. Teacher, Engineer, Business owner)_",
     },
     {
       key: "dependants",
-      ask: () =>
-        "How many **family members** (including yourself) do you want covered under this plan?",
-      quickReplies: ["Just me", "2", "3", "4", "5+"],
+      ask: () => "How many family members (including yourself) do you want covered?\n\n1. **Just me**\n2. **2 people**\n3. **3 people**\n4. **4 people**\n5. **5 or more**",
+      quickReplies: ["1. Just me", "2. 2 people", "3. 3 people", "4. 4 people", "5. 5 or more"],
     },
     {
       key: "preExisting",
-      ask: () =>
-        "Do you have any **pre-existing medical conditions**? _(e.g. diabetes, hypertension)_",
-      quickReplies: ["Yes", "No"],
+      ask: () => "Do you have any pre-existing medical conditions?\n_(e.g. diabetes, hypertension)_\n\n1. **Yes**\n2. **No**",
+      quickReplies: ["1. Yes", "2. No"],
     },
     {
       key: "sumInsured",
-      ask: () =>
-        "What **annual sum insured** are you looking for in RWF?\n_(This is the maximum the insurer will pay per year)_",
-      quickReplies: ["5,000,000", "10,000,000", "20,000,000", "50,000,000"],
+      ask: () => "What annual sum insured are you looking for in RWF?\n_(Maximum the insurer will pay per year)_\n\n1. **RWF 5,000,000**\n2. **RWF 10,000,000**\n3. **RWF 20,000,000**\n4. **RWF 50,000,000**",
+      quickReplies: ["1. RWF 5,000,000", "2. RWF 10,000,000", "3. RWF 20,000,000", "4. RWF 50,000,000"],
     },
   ],
   property: [
     {
       key: "address",
-      ask: () => "What is the **full address** of the property to be insured?",
+      ask: () => "What is the full address of the property to be insured?\n_(e.g. KG 15 Ave, Kigali)_",
     },
     {
       key: "type",
-      ask: () => "Is this a residential or commercial property?",
-      quickReplies: ["Residential", "Commercial", "Industrial"],
+      ask: () => "What type of property is this?\n\n1. **Residential**\n2. **Commercial**\n3. **Industrial**",
+      quickReplies: ["1. Residential", "2. Commercial", "3. Industrial"],
     },
     {
       key: "construction",
-      ask: () => "What are the **walls and roof** made of?",
-      quickReplies: ["Stone / Iron Sheet", "Brick / Tiles", "Concrete / Concrete"],
+      ask: () => "What are the walls and roof made of?\n\n1. **Stone / Iron Sheet**\n2. **Brick / Tiles**\n3. **Concrete / Concrete**",
+      quickReplies: ["1. Stone / Iron Sheet", "2. Brick / Tiles", "3. Concrete / Concrete"],
     },
     {
       key: "yearBuilt",
-      ask: () => "What **year** was the property built?",
+      ask: () => "What year was the property built?\n_(e.g. 2010)_",
     },
     {
       key: "contents",
-      ask: () => "Do you want to insure the **contents** (furniture, electronics, etc.) as well?",
-      quickReplies: ["Yes", "No"],
+      ask: () => "Do you also want to insure the contents (furniture, electronics, appliances)?\n\n1. **Yes**\n2. **No**",
+      quickReplies: ["1. Yes", "2. No"],
     },
     {
       key: "value",
-      ask: () =>
-        "What is the **estimated rebuilding value** of the property in RWF?\n_(The cost to rebuild it from scratch, not the market value)_",
+      ask: () => "What is the estimated rebuilding value of the property in RWF?\n_(Cost to rebuild from scratch — e.g. RWF 50,000,000)_",
     },
   ],
   life: [
     {
       key: "dob",
-      ask: () => "What is your **date of birth**? _(DD/MM/YYYY)_",
+      ask: () => "What is your date of birth?\n_(DD/MM/YYYY — e.g. 01/05/1985)_",
     },
     {
       key: "occupation",
-      ask: () => "What is your **occupation**?",
+      ask: () => "What is your occupation?\n_(e.g. Teacher, Engineer, Business owner)_",
     },
     {
       key: "smoker",
-      ask: () => "Do you **smoke** or use tobacco products?",
-      quickReplies: ["Yes", "No"],
+      ask: () => "Do you smoke or use any tobacco products?\n\n1. **Yes**\n2. **No**",
+      quickReplies: ["1. Yes", "2. No"],
     },
     {
       key: "planType",
-      ask: () => "Which type of life cover are you interested in?",
-      quickReplies: ["Term Life (fixed period)", "Whole Life", "Endowment"],
+      ask: () => "Which type of life cover are you interested in?\n\n1. **Term Life** (fixed period)\n2. **Whole Life**\n3. **Endowment**",
+      quickReplies: ["1. Term Life", "2. Whole Life", "3. Endowment"],
     },
     {
       key: "sumInsured",
-      ask: () =>
-        "What **sum insured** are you looking for in RWF?\n_(The amount your beneficiaries receive)_",
-      quickReplies: ["5,000,000", "10,000,000", "30,000,000", "50,000,000"],
+      ask: () => "What sum insured are you looking for in RWF?\n_(The amount your beneficiaries will receive)_\n\n1. **RWF 5,000,000**\n2. **RWF 10,000,000**\n3. **RWF 30,000,000**\n4. **RWF 50,000,000**",
+      quickReplies: ["1. RWF 5,000,000", "2. RWF 10,000,000", "3. RWF 30,000,000", "4. RWF 50,000,000"],
     },
     {
       key: "beneficiary",
-      ask: () =>
-        "Who is your **primary beneficiary**? Please provide their name and relationship.",
+      ask: () => "Who is your primary beneficiary?\n_(Please provide their name and relationship — e.g. Jane Doe, Spouse)_",
     },
   ],
 };
@@ -266,19 +261,24 @@ function calculateQuote(product: string, answers: Record<string, string>): Quote
   switch (product) {
     case "motor": {
       const value = parseAmount(answers.value);
-      const cover = answers.coverType ?? "Comprehensive";
-      const rate = cover === "Third Party Only" ? 0.03 : 0.05;
-      const premium = Math.max(30_000, value * rate);
+      const cover = answers.coverType ?? "Comprehensive Motor";
+      const rate = cover.toLowerCase().includes("third party only") ? 0.005
+        : cover.toLowerCase().includes("fire") ? 0.03
+        : 0.045;
+      const basicPremium = Math.max(30_000, Math.round(value * rate));
+      const trainingLevy = Math.round(basicPremium * 0.005);
+      const stampDuty = 5_000;
+      const totalPremium = basicPremium + trainingLevy + stampDuty;
       return {
         sumInsured: value,
-        premium,
-        rateLabel: `${(rate * 100).toFixed(0)}% of vehicle value`,
+        premium: totalPremium,
+        rateLabel: `${(rate * 100).toFixed(1)}% of vehicle value`,
         breakdown: [
-          `Vehicle: ${answers.make} ${answers.model} (${answers.year})`,
-          `Cover type: ${cover}`,
-          `Vehicle value: RWF ${value.toLocaleString()}`,
-          `Rate: ${(rate * 100).toFixed(0)}%`,
-          `Annual premium: RWF ${premium.toLocaleString()}`,
+          `Sum Insured: RWF ${value.toLocaleString()}`,
+          `Basic Premium (${(rate * 100).toFixed(1)}%): RWF ${basicPremium.toLocaleString()}`,
+          `Training Levy (0.5%): RWF ${trainingLevy.toLocaleString()}`,
+          `Stamp Duty: RWF ${stampDuty.toLocaleString()}`,
+          `TOTAL PREMIUM: RWF ${totalPremium.toLocaleString()}`,
         ],
       };
     }
@@ -305,72 +305,92 @@ function calculateQuote(product: string, answers: Record<string, string>): Quote
       const colIdx = REGION_IDX[answers.region] ?? 1;
       const bracket = TRAVEL_RATES.find(([max]) => days <= max) ?? TRAVEL_RATES[TRAVEL_RATES.length - 1];
       const premiumUsd = bracket[colIdx];
-      const premium = Math.round(premiumUsd * USD_TO_RWF);
+      const basePremium = Math.round(premiumUsd * USD_TO_RWF);
+      const adminFee = 2_000;
+      const stampDuty = 3_000;
+      const totalPremium = basePremium + adminFee + stampDuty;
       const coverageUsd = answers.region?.startsWith("Worldwide") ? 100_000 : 30_000;
       const coverage = coverageUsd * USD_TO_RWF;
       return {
         sumInsured: coverage,
-        premium,
+        premium: totalPremium,
         rateLabel: `K-Claims flat rate — ${answers.region}`,
         breakdown: [
           `Destination: ${answers.destination}`,
           `Plan: ${answers.region ?? "Africa / Asia"}`,
           `Duration: ${days} day${days !== 1 ? "s" : ""}`,
-          `Medical cover: RWF ${coverage.toLocaleString()}`,
-          `Base rate: $${premiumUsd} USD`,
-          `Total premium: RWF ${premium.toLocaleString()}`,
+          `Medical Cover: RWF ${coverage.toLocaleString()}`,
+          `Base Premium: RWF ${basePremium.toLocaleString()}`,
+          `Admin Fee: RWF ${adminFee.toLocaleString()}`,
+          `Stamp Duty: RWF ${stampDuty.toLocaleString()}`,
+          `TOTAL PREMIUM: RWF ${totalPremium.toLocaleString()}`,
         ],
       };
     }
     case "health": {
       const si = parseAmount(answers.sumInsured);
-      const depCount = answers.dependants === "Just me" ? 1 : parseAmount(answers.dependants);
+      const depCount = answers.dependants?.includes("Just me") || answers.dependants === "1" ? 1
+        : answers.dependants?.includes("more") || answers.dependants?.includes("5") ? 5
+        : parseAmount(answers.dependants) || 1;
       const rate = 0.04 + (depCount > 1 ? (depCount - 1) * 0.015 : 0);
-      const premium = Math.max(80_000, si * rate);
+      const basicPremium = Math.max(80_000, Math.round(si * rate));
+      const adminFee = Math.round(basicPremium * 0.03);
+      const stampDuty = 3_000;
+      const totalPremium = basicPremium + adminFee + stampDuty;
       return {
         sumInsured: si,
-        premium,
+        premium: totalPremium,
         rateLabel: `${(rate * 100).toFixed(1)}% of sum insured`,
         breakdown: [
-          `Lives covered: ${depCount}`,
-          `Annual sum insured: RWF ${si.toLocaleString()}`,
-          `Rate: ${(rate * 100).toFixed(1)}%`,
-          `Annual premium: RWF ${premium.toLocaleString()}`,
+          `Sum Insured: RWF ${si.toLocaleString()}`,
+          `Lives Covered: ${depCount}`,
+          `Basic Premium (${(rate * 100).toFixed(1)}%): RWF ${basicPremium.toLocaleString()}`,
+          `Admin Fee (3%): RWF ${adminFee.toLocaleString()}`,
+          `Stamp Duty: RWF ${stampDuty.toLocaleString()}`,
+          `TOTAL PREMIUM: RWF ${totalPremium.toLocaleString()}`,
         ],
       };
     }
     case "property": {
       const value = parseAmount(answers.value);
-      const hasContents = answers.contents === "Yes";
-      const buildingPremium = value * 0.0035;
-      const contentsPremium = hasContents ? value * 0.005 : 0;
-      const premium = Math.max(50_000, buildingPremium + contentsPremium);
+      const hasContents = answers.contents?.toLowerCase().includes("yes") ?? false;
+      const buildingPremium = Math.round(value * 0.0035);
+      const contentsPremium = hasContents ? Math.round(value * 0.005) : 0;
+      const basePremium = Math.max(50_000, buildingPremium + contentsPremium);
+      const stampDuty = 5_000;
+      const totalPremium = basePremium + stampDuty;
       return {
         sumInsured: value,
-        premium,
+        premium: totalPremium,
         rateLabel: `0.35% buildings${hasContents ? " + 0.5% contents" : ""}`,
         breakdown: [
-          `Property: ${answers.address}`,
-          `Building value: RWF ${value.toLocaleString()} @ 0.35%`,
-          ...(hasContents ? [`Contents @ 0.5% included`] : []),
-          `Annual premium: RWF ${premium.toLocaleString()}`,
+          `Sum Insured: RWF ${value.toLocaleString()}`,
+          `Building Premium (0.35%): RWF ${buildingPremium.toLocaleString()}`,
+          ...(hasContents ? [`Contents Premium (0.5%): RWF ${contentsPremium.toLocaleString()}`] : []),
+          `Stamp Duty: RWF ${stampDuty.toLocaleString()}`,
+          `TOTAL PREMIUM: RWF ${totalPremium.toLocaleString()}`,
         ],
       };
     }
     case "life": {
       const si = parseAmount(answers.sumInsured);
-      const smoker = answers.smoker === "Yes";
+      const smoker = answers.smoker?.toLowerCase().includes("yes") ?? false;
       const rate = smoker ? 0.025 : 0.015;
-      const premium = Math.max(50_000, si * rate);
+      const basicPremium = Math.max(50_000, Math.round(si * rate));
+      const adminFee = Math.round(basicPremium * 0.03);
+      const stampDuty = 3_000;
+      const totalPremium = basicPremium + adminFee + stampDuty;
       return {
         sumInsured: si,
-        premium,
+        premium: totalPremium,
         rateLabel: `${(rate * 100).toFixed(1)}% of sum insured${smoker ? " (smoker loading)" : ""}`,
         breakdown: [
-          `Sum insured: RWF ${si.toLocaleString()}`,
-          `Smoker: ${smoker ? "Yes" : "No"}`,
-          `Rate: ${(rate * 100).toFixed(1)}%`,
-          `Annual premium: RWF ${premium.toLocaleString()}`,
+          `Sum Insured: RWF ${si.toLocaleString()}`,
+          `Basic Premium (${(rate * 100).toFixed(1)}%): RWF ${basicPremium.toLocaleString()}`,
+          ...(smoker ? [`Smoker Loading: included`] : []),
+          `Admin Fee (3%): RWF ${adminFee.toLocaleString()}`,
+          `Stamp Duty: RWF ${stampDuty.toLocaleString()}`,
+          `TOTAL PREMIUM: RWF ${totalPremium.toLocaleString()}`,
         ],
       };
     }
@@ -391,7 +411,7 @@ function makeGreeting(firstName?: string): ChatMessage {
   const name = firstName ? ` ${firstName}` : "";
   return {
     from: "bot",
-    text: `Hello${name}! 👋\n\nI'm **Klaims AI**, your personal insurance advisor. I am here to help you find the right coverage and get an instant quote.\n\nPlease choose any of the options below by typing the **number** or clicking a button:\n\n1. Motor Insurance\n2. Health Insurance\n3. Property Insurance\n4. Life Insurance\n5. Travel Insurance\n6. Speak to an Agent`,
+    text: `Hello${name}! 👋\n\nI'm **Klaims AI**, your personal insurance advisor. I am here to help you find the right cover and get an instant quote.\n\nPlease choose any of the options below by typing 1, 2, 3, 4, 5 or 6:\n\n1. **Motor Insurance**\n2. **Health Insurance**\n3. **Property Insurance**\n4. **Life Insurance**\n5. **Travel Insurance**\n6. **Customer Service Support**\n\nBy proceeding, you are accepting our terms and conditions.${MENU_FOOTER}`,
     quickReplies: PRODUCT_QUICK_REPLIES,
   };
 }
@@ -511,17 +531,33 @@ export default function OnboardingPage() {
 
   const handleInput = (input: string) => {
     if (!input.trim()) return;
-    userSay(input);
+    const trimmed = input.trim();
+    userSay(trimmed);
     setInputValue("");
+
+    // ── Special keywords — Menu / Exit ────────────────────────────────────
+    const lower = trimmed.toLowerCase();
+    if (lower === "menu" || lower === "main menu") {
+      const resetConvo = { phase: "greeting" as const, product: "", productLabel: "", questionIndex: 0, answers: {}, quote: null };
+      setConvo(resetConvo);
+      setTimeout(() => setMessages([makeGreeting(profile.firstName || undefined)]), 300);
+      return;
+    }
+    if (lower === "exit" || lower === "bye" || lower === "quit") {
+      setTimeout(() => botSay(
+        "Thank you for chatting with **Klaims AI**! 👋\n\nFeel free to return whenever you need insurance assistance. Have a great day!"
+      ), 300);
+      return;
+    }
 
     // ── Phase: greeting — product selection ──────────────────────────────
     if (convo.phase === "greeting") {
-      const numStr = input.trim().replace(/^(\d+).*$/, "$1");
+      const numStr = trimmed.replace(/^(\d+).*$/, "$1");
       const num = parseInt(numStr);
 
-      if (num === 6 || input.toLowerCase().includes("agent")) {
+      if (num === 6 || lower.includes("agent") || lower.includes("customer service") || lower.includes("support")) {
         setTimeout(() => botSay(
-          "Got it! 📞 One of our agents will reach out to assist you shortly.\n\nIn the meantime, you can still get an instant quote by choosing a product:",
+          "Got it! 📞 One of our Customer Service representatives will reach out to assist you shortly.\n\nIn the meantime, you can still get an instant quote by selecting a product below.\n\nHere are more options for you:\n1. **Motor Insurance**\n2. **Health Insurance**\n3. **Property Insurance**\n4. **Life Insurance**\n5. **Travel Insurance**" + MENU_FOOTER,
           PRODUCT_QUICK_REPLIES.slice(0, 5)
         ), 400);
         return;
@@ -531,7 +567,7 @@ export default function OnboardingPage() {
       if (!isNaN(num) && num >= 1 && num <= 5) {
         productKey = PRODUCT_ORDER[num - 1];
       } else {
-        const normalised = input.toLowerCase().replace(/^\d+\.\s*/, "").trim();
+        const normalised = lower.replace(/^\d+\.\s*/, "").trim();
         const found = Object.entries(PRODUCT_LABELS).find(([, label]) =>
           label.toLowerCase().includes(normalised) ||
           normalised.includes(label.split(" ")[0].toLowerCase())
@@ -541,22 +577,45 @@ export default function OnboardingPage() {
 
       if (!productKey) {
         setTimeout(() => botSay(
-          "Please type a **number** (1–6) to select an option.",
+          "Please type a number (1–6) to select an option." + MENU_FOOTER,
           PRODUCT_QUICK_REPLIES
         ), 400);
         return;
       }
 
       const productLabel = PRODUCT_LABELS[productKey];
-      const firstQ = PRODUCT_QUESTIONS[productKey][0];
-      setConvo({
-        phase: "questioning", product: productKey, productLabel,
-        questionIndex: 0, answers: {}, quote: null,
-      });
+      const intro = PRODUCT_INTROS[productKey] ?? "";
+      setConvo({ phase: "product_intro", product: productKey, productLabel, questionIndex: 0, answers: {}, quote: null });
       setTimeout(() => botSay(
-        `Great choice! **${productLabel}** it is. 🎉\n\nI'll ask you a few quick questions to build your personalised quote.\n\n${firstQ.ask({})}`,
-        firstQ.quickReplies
+        `Fantastic! ✨\n\n${intro}\n\nWould you like to:\n\n1. **Get an instant quote**\n2. **Talk to our Customer Care Team**` + MENU_FOOTER,
+        ["1. Get an instant quote", "2. Talk to our Customer Care Team"]
       ), 500);
+      return;
+    }
+
+    // ── Phase: product_intro — user chose to get quote or talk to agent ──
+    if (convo.phase === "product_intro") {
+      const cleanInput = trimmed.replace(/^\d+\.\s*/, "").trim().toLowerCase();
+      if (cleanInput.includes("customer care") || cleanInput.includes("talk") || trimmed === "2") {
+        setTimeout(() => botSay(
+          "Got it! 📞 One of our Customer Care agents will reach out to assist you shortly.\n\nHere are more options for you:\n1. **Get an instant quote**\n2. **Return to Main Menu**" + MENU_FOOTER,
+          ["1. Get an instant quote", "2. Return to Main Menu"]
+        ), 400);
+        return;
+      }
+      if (cleanInput.includes("return") || cleanInput.includes("main menu")) {
+        const resetConvo = { phase: "greeting" as const, product: "", productLabel: "", questionIndex: 0, answers: {}, quote: null };
+        setConvo(resetConvo);
+        setTimeout(() => setMessages([makeGreeting(profile.firstName || undefined)]), 300);
+        return;
+      }
+      // "1. Get an instant quote" or any other input → start questioning
+      const firstQ = PRODUCT_QUESTIONS[convo.product][0];
+      setConvo({ ...convo, phase: "questioning" });
+      setTimeout(() => botSay(
+        `Great! Let's build your **${convo.productLabel}** quote. I'll ask you a few quick questions.\n\n${firstQ.ask({})}` + MENU_FOOTER,
+        firstQ.quickReplies
+      ), 400);
       return;
     }
 
@@ -564,22 +623,30 @@ export default function OnboardingPage() {
     if (convo.phase === "questioning") {
       const questions = PRODUCT_QUESTIONS[convo.product];
       const currentQ = questions[convo.questionIndex];
-      const newAnswers = { ...convo.answers, [currentQ.key]: input };
+      // Strip leading "N. " prefix so "1. Private use" stores as "Private use"
+      const cleanInput = trimmed.replace(/^\d+\.\s*/, "").trim();
+      const newAnswers = { ...convo.answers, [currentQ.key]: cleanInput };
       const nextIndex = convo.questionIndex + 1;
 
       if (nextIndex < questions.length) {
         const nextQ = questions[nextIndex];
         setConvo({ ...convo, answers: newAnswers, questionIndex: nextIndex });
         setTimeout(() => botSay(
-          `${nextAck()} ${nextQ.ask(newAnswers)}`,
+          `${nextAck()}\n\n${nextQ.ask(newAnswers)}` + MENU_FOOTER,
           nextQ.quickReplies
         ), 500);
       } else {
         const quote = calculateQuote(convo.product, newAnswers);
         setConvo({ ...convo, answers: newAnswers, phase: "quoting", quote });
+        // Format quote lines: last line (TOTAL) gets bold markers
+        const quoteLines = quote.breakdown.map((line, i) =>
+          i === quote.breakdown.length - 1
+            ? `**${line}**`
+            : line
+        ).join("\n");
         setTimeout(() => botSay(
-          `${nextAck()} That's all I need!\n\n💰 **Your Personalised Quote**\n\n${quote.breakdown.map((l) => `• ${l}`).join("\n")}\n\n_Rate basis: ${quote.rateLabel}_\n\nWould you like to proceed with this quote?`,
-          ["✅ Accept & Continue", "🔄 Start Over", "📞 Speak to an Agent"]
+          `${nextAck()} That's all I need! ✅\n\nPlease find your quote below:\n\n${quoteLines}\n\nWould you like to:\n\n1. **Apply Now**\n2. **Save & Buy Later**\n3. **Speak to an Agent**` + MENU_FOOTER,
+          ["1. Apply Now", "2. Save & Buy Later", "3. Speak to an Agent"]
         ), 600);
       }
       return;
@@ -587,22 +654,26 @@ export default function OnboardingPage() {
 
     // ── Phase: quoting — accept / reject ─────────────────────────────────
     if (convo.phase === "quoting") {
-      if (input.includes("Accept")) {
+      const cleanInput = trimmed.replace(/^\d+\.\s*/, "").trim().toLowerCase();
+      if (cleanInput.includes("apply") || trimmed === "1") {
         setConvo({ ...convo, phase: "confirmed" });
         setTimeout(() => botSay(
-          `Excellent! Your quote has been locked in. 🎉\n\nYour estimated **annual premium is RWF ${convo.quote!.premium.toLocaleString()}**.\n\nClick **Continue to Documents** below to upload your files and finalise your application.`
+          `Excellent! 🎉 Your quote has been locked in.\n\nTo make it easier to complete your application, please click **Continue to Documents** below to upload your required files.\n\nOnce you are done, you will be able to review and submit your application.`
         ), 400);
-      } else if (input.includes("Start Over")) {
-        setConvo({ phase: "greeting", product: "", productLabel: "", questionIndex: 0, answers: {}, quote: null });
+      } else if (cleanInput.includes("save") || cleanInput.includes("later") || trimmed === "2") {
+        setConvo({ ...convo, phase: "confirmed" });
         setTimeout(() => botSay(
-          "No problem! Let's start fresh.\n\nPlease choose an option:\n\n1. Motor Insurance\n2. Health Insurance\n3. Property Insurance\n4. Life Insurance\n5. Travel Insurance\n6. Speak to an Agent",
-          PRODUCT_QUICK_REPLIES
+          `Noted! 📋 Your quote has been saved.\n\nYour estimated **annual premium is RWF ${convo.quote!.premium.toLocaleString()}**.\n\nClick **Continue to Documents** whenever you are ready to complete your application.`
         ), 400);
-      } else {
+      } else if (cleanInput.includes("agent") || trimmed === "3") {
         setTimeout(() => botSay(
-          "No problem! One of our agents will reach out to assist you. In the meantime, you can still continue with this quote or start over.",
-          ["✅ Accept & Continue", "🔄 Start Over"]
+          `Got it! 📞 One of our agents will reach out to assist you shortly.\n\nHere are more options for you:\n1. **Apply Now**\n2. **Start Over**` + MENU_FOOTER,
+          ["1. Apply Now", "2. Start Over"]
         ), 400);
+      } else if (cleanInput.includes("start over")) {
+        const resetConvo = { phase: "greeting" as const, product: "", productLabel: "", questionIndex: 0, answers: {}, quote: null };
+        setConvo(resetConvo);
+        setTimeout(() => setMessages([makeGreeting(profile.firstName || undefined)]), 400);
       }
     }
   };
@@ -891,7 +962,7 @@ export default function OnboardingPage() {
               </div>
 
               {/* Chat window */}
-              <div className="h-80 overflow-y-auto border rounded-xl p-4 space-y-4 bg-gray-50">
+              <div className="h-96 overflow-y-auto border rounded-xl p-4 space-y-4 bg-gray-50">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex gap-2 ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
                     {msg.from === "bot" && (
@@ -921,7 +992,7 @@ export default function OnboardingPage() {
                               key={qr}
                               onClick={() => handleInput(qr)}
                               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                                qr.includes("Accept") || qr.includes("Continue")
+                                qr.includes("Apply") || qr.includes("Get an instant") || qr === "1. Get an instant quote"
                                   ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
                                   : "bg-white border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-600"
                               }`}
@@ -945,16 +1016,26 @@ export default function OnboardingPage() {
               {/* Quote summary card (shown when confirmed) */}
               {convo.phase === "confirmed" && convo.quote && (
                 <div className="rounded-xl border border-green-200 bg-green-50 p-4">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <Tag className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-semibold text-green-800">Your Quote</span>
+                    <span className="text-sm font-semibold text-green-800">Your Confirmed Quote</span>
                   </div>
-                  <div className="space-y-1">
-                    {convo.quote.breakdown.map((line, i) => (
-                      <p key={i} className={`text-sm ${i === convo.quote!.breakdown.length - 1 ? "font-bold text-green-700 text-base mt-1" : "text-gray-600"}`}>
-                        {line}
-                      </p>
-                    ))}
+                  <div className="space-y-1.5">
+                    {convo.quote.breakdown.map((line, i) => {
+                      const isTotal = i === convo.quote!.breakdown.length - 1;
+                      return (
+                        <div key={i} className={`flex justify-between text-sm ${isTotal ? "font-bold text-green-700 text-base pt-2 mt-1 border-t border-green-200" : "text-gray-600"}`}>
+                          {line.split(": ").length === 2 ? (
+                            <>
+                              <span>{line.split(": ")[0]}:</span>
+                              <span className={isTotal ? "text-green-700" : "font-medium text-gray-800"}>{line.split(": ")[1]}</span>
+                            </>
+                          ) : (
+                            <span className="col-span-2">{line}</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -967,7 +1048,7 @@ export default function OnboardingPage() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleInput(inputValue)}
-                    placeholder="Type your answer…"
+                    placeholder="Type a number or your answer…"
                     className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button onClick={() => handleInput(inputValue)}
@@ -1084,10 +1165,20 @@ export default function OnboardingPage() {
                     <div className="col-span-2"><span className="text-gray-500">Annual Premium:</span> <span className="font-bold text-blue-700 text-base">RWF {convo.quote?.premium.toLocaleString()}</span></div>
                   </div>
                   {convo.quote && (
-                    <div className="mt-3 pt-3 border-t space-y-1">
-                      {convo.quote.breakdown.map((line, i) => (
-                        <p key={i} className="text-xs text-gray-500">• {line}</p>
-                      ))}
+                    <div className="mt-3 pt-3 border-t space-y-1.5">
+                      {convo.quote.breakdown.map((line, i) => {
+                        const isTotal = i === convo.quote!.breakdown.length - 1;
+                        const parts = line.split(": ");
+                        return (
+                          <div key={i} className={`flex justify-between text-xs ${isTotal ? "font-bold text-blue-700 text-sm pt-1 mt-1 border-t" : "text-gray-500"}`}>
+                            {parts.length === 2 ? (
+                              <><span>{parts[0]}:</span><span className="font-medium">{parts[1]}</span></>
+                            ) : (
+                              <span>{line}</span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
