@@ -11,6 +11,7 @@ export const submitFromOnboarding = mutation({
     productType: v.string(),
     sumInsured: v.number(),
     riskDetails: v.object({ data: v.any() }),
+    agentUsername: v.optional(v.string()),
     uploadedFiles: v.array(
       v.object({
         storageId: v.string(),
@@ -54,9 +55,20 @@ export const submitFromOnboarding = mutation({
       });
     }
 
-    // 2. Create proposal
+    // 2. Resolve optional agent by username
+    let agentId: typeof userId | undefined;
+    if (args.agentUsername) {
+      const agent = await ctx.db
+        .query("users")
+        .withIndex("by_username", (q) => q.eq("username", args.agentUsername))
+        .unique();
+      if (agent && agent.role === "distributor") agentId = agent._id;
+    }
+
+    // 3. Create proposal
     const proposalId = await ctx.db.insert("proposals", {
       clientId: userId,
+      distributorId: agentId,
       productType: args.productType,
       riskDetails: args.riskDetails,
       sumInsured: args.sumInsured,
@@ -66,7 +78,7 @@ export const submitFromOnboarding = mutation({
       updatedAt: now,
     });
 
-    // 3. Create document records and link to proposal
+    // 4. Create document records and link to proposal
     const documentIds = [];
     for (const file of args.uploadedFiles) {
       const docId = await ctx.db.insert("documents", {
@@ -87,7 +99,21 @@ export const submitFromOnboarding = mutation({
       await ctx.db.patch(proposalId, { documents: documentIds });
     }
 
-    // 4. Notify all underwriters
+    // 5. Notify agent if linked
+    if (agentId) {
+      await ctx.db.insert("notifications", {
+        userId: agentId,
+        title: "New Client Application",
+        message: `${args.name} submitted a ${args.productType} application linked to you.`,
+        read: false,
+        type: "proposal_status",
+        link: `/distributor/proposals/${proposalId}`,
+        entityId: proposalId,
+        createdAt: now,
+      });
+    }
+
+    // 6. Notify all underwriters
     const underwriters = await ctx.db
       .query("users")
       .withIndex("by_role", (q) => q.eq("role", "underwriter"))
@@ -107,6 +133,189 @@ export const submitFromOnboarding = mutation({
     }
 
     return { userId, proposalId };
+  },
+});
+
+// ─── Agent-initiated onboarding ───────────────────────────────────────────────
+
+export const submitAgentOnboarding = mutation({
+  args: {
+    agentClerkId: v.string(),
+    clientUsername: v.string(),
+    productType: v.string(),
+    sumInsured: v.number(),
+    riskDetails: v.object({ data: v.any() }),
+    uploadedFiles: v.array(
+      v.object({
+        storageId: v.string(),
+        name: v.string(),
+        mimeType: v.optional(v.string()),
+        sizeBytes: v.optional(v.number()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // 1. Resolve agent
+    const agent = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.agentClerkId))
+      .unique();
+    if (!agent || agent.role !== "distributor") throw new Error("Agent not found");
+
+    // 2. Resolve client by username
+    const client = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", args.clientUsername))
+      .unique();
+    if (!client || client.role !== "client") throw new Error("Client not found");
+
+    // 3. Create proposal in pending-confirmation state
+    const proposalId = await ctx.db.insert("proposals", {
+      clientId: client._id,
+      distributorId: agent._id,
+      initiatedByAgentId: agent._id,
+      pendingClientConfirmation: true,
+      productType: args.productType,
+      riskDetails: args.riskDetails,
+      sumInsured: args.sumInsured,
+      status: "pending",
+      documents: [],
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // 4. Upload documents
+    const documentIds = [];
+    for (const file of args.uploadedFiles) {
+      const docId = await ctx.db.insert("documents", {
+        name: file.name,
+        fileId: file.storageId,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+        entityId: proposalId,
+        entityType: "proposal",
+        uploadedBy: agent._id,
+        verified: false,
+        flagged: false,
+        createdAt: now,
+      });
+      documentIds.push(docId);
+    }
+    if (documentIds.length > 0) {
+      await ctx.db.patch(proposalId, { documents: documentIds });
+    }
+
+    // 5. Notify client to confirm
+    await ctx.db.insert("notifications", {
+      userId: client._id,
+      title: "Insurance Application Requires Your Approval",
+      message: `Agent ${agent.name} has prepared a ${args.productType} insurance application on your behalf. Please review and confirm.`,
+      read: false,
+      type: "proposal_status",
+      link: `/client`,
+      entityId: proposalId,
+      createdAt: now,
+    });
+
+    return { proposalId, clientId: client._id };
+  },
+});
+
+export const confirmAgentOnboarding = mutation({
+  args: { proposalId: v.id("proposals") },
+  handler: async (ctx, { proposalId }) => {
+    const proposal = await ctx.db.get(proposalId);
+    if (!proposal) throw new Error("Proposal not found");
+
+    await ctx.db.patch(proposalId, {
+      pendingClientConfirmation: false,
+      updatedAt: Date.now(),
+    });
+
+    // Notify agent
+    if (proposal.initiatedByAgentId) {
+      const client = await ctx.db.get(proposal.clientId);
+      await ctx.db.insert("notifications", {
+        userId: proposal.initiatedByAgentId,
+        title: "Client Confirmed Application",
+        message: `${client?.name ?? "The client"} has confirmed the ${proposal.productType} application you submitted on their behalf.`,
+        read: false,
+        type: "proposal_status",
+        link: `/distributor/proposals/${proposalId}`,
+        entityId: proposalId,
+        createdAt: Date.now(),
+      });
+    }
+
+    // Notify underwriters
+    const underwriters = await ctx.db
+      .query("users")
+      .withIndex("by_role", (q) => q.eq("role", "underwriter"))
+      .collect();
+
+    const client = await ctx.db.get(proposal.clientId);
+    for (const uw of underwriters) {
+      await ctx.db.insert("notifications", {
+        userId: uw._id,
+        title: "New Application Submitted",
+        message: `${client?.name ?? "A client"} confirmed a new ${proposal.productType} insurance application.`,
+        read: false,
+        type: "proposal_status",
+        link: `/underwriter/proposals/${proposalId}`,
+        entityId: proposalId,
+        createdAt: Date.now(),
+      });
+    }
+  },
+});
+
+export const rejectAgentOnboarding = mutation({
+  args: { proposalId: v.id("proposals") },
+  handler: async (ctx, { proposalId }) => {
+    const proposal = await ctx.db.get(proposalId);
+    if (!proposal) throw new Error("Proposal not found");
+
+    // Notify agent of rejection
+    if (proposal.initiatedByAgentId) {
+      const client = await ctx.db.get(proposal.clientId);
+      await ctx.db.insert("notifications", {
+        userId: proposal.initiatedByAgentId,
+        title: "Client Declined Application",
+        message: `${client?.name ?? "The client"} has declined the ${proposal.productType} application you submitted on their behalf.`,
+        read: false,
+        type: "proposal_status",
+        link: `/distributor`,
+        entityId: proposalId,
+        createdAt: Date.now(),
+      });
+    }
+
+    await ctx.db.delete(proposalId);
+  },
+});
+
+export const listPendingConfirmations = query({
+  args: { clientId: v.id("users") },
+  handler: async (ctx, { clientId }) => {
+    return ctx.db
+      .query("proposals")
+      .withIndex("by_client", (q) => q.eq("clientId", clientId))
+      .filter((q) => q.eq(q.field("pendingClientConfirmation"), true))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const listByAgent = query({
+  args: { agentId: v.id("users") },
+  handler: async (ctx, { agentId }) => {
+    return ctx.db
+      .query("proposals")
+      .withIndex("by_agent", (q) => q.eq("initiatedByAgentId", agentId))
+      .order("desc")
+      .collect();
   },
 });
 

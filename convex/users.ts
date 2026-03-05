@@ -76,6 +76,7 @@ export const completeOnboarding = mutation({
       v.literal("assessor"),
       v.literal("admin")
     ),
+    username: v.optional(v.string()),
     phone: v.optional(v.string()),
     name: v.optional(v.string()),
     email: v.optional(v.string()),
@@ -89,12 +90,12 @@ export const completeOnboarding = mutation({
     const now = Date.now();
 
     if (!user) {
-      // User not yet synced via webhook — create them now
       const id = await ctx.db.insert("users", {
         clerkId: args.clerkId,
         name: args.name ?? "User",
         email: args.email ?? "",
         role: args.role,
+        username: args.username,
         phone: args.phone,
         onboardingComplete: true,
         isActive: true,
@@ -107,12 +108,23 @@ export const completeOnboarding = mutation({
     await ctx.db.patch(user._id, {
       role: args.role,
       onboardingComplete: true,
+      username: args.username ?? user.username,
       phone: args.phone,
       name: args.name ?? user.name,
       updatedAt: now,
     });
 
     return user._id;
+  },
+});
+
+export const getByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, { username }) => {
+    return ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", username))
+      .unique();
   },
 });
 
@@ -140,6 +152,19 @@ export const setActiveStatus = mutation({
   },
   handler: async (ctx, { userId, isActive }) => {
     await ctx.db.patch(userId, { isActive, updatedAt: Date.now() });
+  },
+});
+
+export const deleteUser = mutation({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
+      .unique();
+    if (user) {
+      await ctx.db.delete(user._id);
+    }
   },
 });
 

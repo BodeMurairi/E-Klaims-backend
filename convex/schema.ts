@@ -15,6 +15,7 @@ export default defineSchema({
       v.literal("assessor"),
       v.literal("admin")
     ),
+    username: v.optional(v.string()),
     phone: v.optional(v.string()),
     nationalId: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
@@ -25,7 +26,8 @@ export default defineSchema({
   })
     .index("by_clerk_id", ["clerkId"])
     .index("by_role", ["role"])
-    .index("by_email", ["email"]),
+    .index("by_email", ["email"])
+    .index("by_username", ["username"]),
 
   // ─── POLICIES ─────────────────────────────────────────────────────────────
   policies: defineTable({
@@ -78,13 +80,17 @@ export default defineSchema({
     underwriterNotes: v.optional(v.string()),
     rejectionReason: v.optional(v.string()),
     convertedPolicyId: v.optional(v.id("policies")),
+    // Agent-initiated onboarding — proposal awaits client confirmation
+    pendingClientConfirmation: v.optional(v.boolean()),
+    initiatedByAgentId: v.optional(v.id("users")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_client", ["clientId"])
     .index("by_distributor", ["distributorId"])
     .index("by_underwriter", ["underwriterId"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_agent", ["initiatedByAgentId"]),
 
   // ─── CLAIMS ───────────────────────────────────────────────────────────────
   claims: defineTable({
