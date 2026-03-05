@@ -1,6 +1,115 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+export const submitFromOnboarding = mutation({
+  args: {
+    clerkId: v.string(),
+    name: v.string(),
+    email: v.string(),
+    phone: v.optional(v.string()),
+    nationalId: v.optional(v.string()),
+    productType: v.string(),
+    sumInsured: v.number(),
+    riskDetails: v.object({ data: v.any() }),
+    uploadedFiles: v.array(
+      v.object({
+        storageId: v.string(),
+        name: v.string(),
+        mimeType: v.optional(v.string()),
+        sizeBytes: v.optional(v.number()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // 1. Upsert Convex user
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .unique();
+
+    let userId;
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        phone: args.phone,
+        nationalId: args.nationalId,
+        name: args.name,
+        onboardingComplete: true,
+        updatedAt: now,
+      });
+      userId = existing._id;
+    } else {
+      userId = await ctx.db.insert("users", {
+        clerkId: args.clerkId,
+        name: args.name,
+        email: args.email,
+        phone: args.phone,
+        nationalId: args.nationalId,
+        role: "client",
+        onboardingComplete: true,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    // 2. Create proposal
+    const proposalId = await ctx.db.insert("proposals", {
+      clientId: userId,
+      productType: args.productType,
+      riskDetails: args.riskDetails,
+      sumInsured: args.sumInsured,
+      status: "pending",
+      documents: [],
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // 3. Create document records and link to proposal
+    const documentIds = [];
+    for (const file of args.uploadedFiles) {
+      const docId = await ctx.db.insert("documents", {
+        name: file.name,
+        fileId: file.storageId,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+        entityId: proposalId,
+        entityType: "proposal",
+        uploadedBy: userId,
+        verified: false,
+        flagged: false,
+        createdAt: now,
+      });
+      documentIds.push(docId);
+    }
+    if (documentIds.length > 0) {
+      await ctx.db.patch(proposalId, { documents: documentIds });
+    }
+
+    // 4. Notify all underwriters
+    const underwriters = await ctx.db
+      .query("users")
+      .withIndex("by_role", (q) => q.eq("role", "underwriter"))
+      .collect();
+
+    for (const uw of underwriters) {
+      await ctx.db.insert("notifications", {
+        userId: uw._id,
+        title: "New Application Submitted",
+        message: `${args.name} submitted a new ${args.productType} insurance application.`,
+        read: false,
+        type: "proposal_status",
+        link: `/underwriter/proposals/${proposalId}`,
+        entityId: proposalId,
+        createdAt: now,
+      });
+    }
+
+    return { userId, proposalId };
+  },
+});
+
 export const submit = mutation({
   args: {
     clientId: v.id("users"),

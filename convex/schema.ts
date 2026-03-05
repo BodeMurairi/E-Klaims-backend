@@ -16,6 +16,7 @@ export default defineSchema({
       v.literal("admin")
     ),
     phone: v.optional(v.string()),
+    nationalId: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
     onboardingComplete: v.boolean(),
     isActive: v.boolean(),
@@ -58,7 +59,7 @@ export default defineSchema({
   // ─── PROPOSALS ────────────────────────────────────────────────────────────
   proposals: defineTable({
     clientId: v.id("users"),
-    distributorId: v.id("users"),
+    distributorId: v.optional(v.id("users")),
     underwriterId: v.optional(v.id("users")),
     productType: v.string(),
     riskDetails: v.object({ data: v.any() }),
