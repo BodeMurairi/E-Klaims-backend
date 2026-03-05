@@ -1,0 +1,7 @@
+{
+  "/api/onboarding/route": "app/api/onboarding/route.js",
+  "/page": "app/page.js",
+  "/onboarding/page": "app/onboarding/page.js",
+  "/(dashboard)/distributor/page": "app/(dashboard)/distributor/page.js",
+  "/(dashboard)/client/page": "app/(dashboard)/client/page.js"
+}
