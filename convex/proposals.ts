@@ -199,6 +199,17 @@ export const listAll = query({
   },
 });
 
+export const listByClient = query({
+  args: { clientId: v.id("users") },
+  handler: async (ctx, { clientId }) => {
+    return ctx.db
+      .query("proposals")
+      .withIndex("by_client", (q) => q.eq("clientId", clientId))
+      .order("desc")
+      .collect();
+  },
+});
+
 export const assignUnderwriter = mutation({
   args: {
     proposalId: v.id("proposals"),

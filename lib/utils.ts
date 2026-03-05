@@ -18,8 +18,8 @@ export function formatRelativeTime(timestamp: number): string {
   return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
 }
 
-export function formatCurrency(amount: number, currency = "KES"): string {
-  return `${currency} ${amount.toLocaleString("en-KE")}`;
+export function formatCurrency(amount: number, currency = "RWF"): string {
+  return `${currency} ${amount.toLocaleString("en-RW")}`;
 }
 
 export function generateId(prefix: string): string {

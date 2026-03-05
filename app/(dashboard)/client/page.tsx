@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ClaimStatusBadge } from "@/components/dashboard/ClaimStatusBadge";
 import { formatDate, formatCurrency, formatRelativeTime } from "@/lib/utils";
-import { Shield, FileText, Clock, Plus } from "lucide-react";
+import { Shield, FileText, Clock, Plus, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export default function ClientDashboard() {
@@ -17,6 +17,10 @@ export default function ClientDashboard() {
   );
   const claims = useQuery(
     api.claims.listByClient,
+    convexUser ? { clientId: convexUser._id } : "skip"
+  );
+  const proposals = useQuery(
+    api.proposals.listByClient,
     convexUser ? { clientId: convexUser._id } : "skip"
   );
 
@@ -66,6 +70,66 @@ export default function ClientDashboard() {
           iconColor="text-purple-600"
         />
       </div>
+
+      {/* Application Tracker */}
+      {proposals && proposals.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+          <div className="px-5 py-4 border-b flex items-center justify-between">
+            <h3 className="font-semibold text-gray-800 text-sm">My Applications</h3>
+            <span className="text-xs text-gray-400">{proposals.length} application{proposals.length !== 1 ? "s" : ""}</span>
+          </div>
+          <div className="divide-y">
+            {proposals.map((proposal) => {
+              const STATUS_CONFIG: Record<string, { label: string; color: string; step: number }> = {
+                pending:        { label: "Submitted", color: "bg-blue-100 text-blue-700", step: 1 },
+                under_review:   { label: "Under Review", color: "bg-yellow-100 text-yellow-700", step: 2 },
+                more_documents: { label: "More Info Requested", color: "bg-orange-100 text-orange-700", step: 3 },
+                approved:       { label: "Approved", color: "bg-green-100 text-green-700", step: 4 },
+                rejected:       { label: "Declined", color: "bg-red-100 text-red-700", step: 5 },
+              };
+              const cfg = STATUS_CONFIG[proposal.status] ?? STATUS_CONFIG.pending;
+              const STEPS = ["Submitted", "Under Review", "More Info", "Approved / Declined"];
+              return (
+                <div key={proposal._id} className="px-5 py-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="font-medium text-gray-800 text-sm capitalize">{proposal.productType} Insurance</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{formatRelativeTime(proposal.createdAt)}</p>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.color}`}>{cfg.label}</span>
+                  </div>
+                  {/* Progress track */}
+                  <div className="flex items-center gap-1">
+                    {STEPS.map((s, i) => {
+                      const active = i < Math.min(cfg.step, STEPS.length);
+                      return (
+                        <div key={s} className="flex items-center gap-1 flex-1 min-w-0">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? "bg-blue-600" : "bg-gray-200"}`} />
+                          {i < STEPS.length - 1 && (
+                            <div className={`h-0.5 flex-1 ${i < cfg.step - 1 ? "bg-blue-600" : "bg-gray-200"}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    {STEPS.map((s, i) => (
+                      <span key={s} className={`text-xs ${i === Math.min(cfg.step - 1, STEPS.length - 1) ? "text-blue-600 font-medium" : "text-gray-400"}`}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                  {proposal.underwriterNotes && (
+                    <p className="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 italic">
+                      "{proposal.underwriterNotes}"
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Policies */}
