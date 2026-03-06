@@ -12,10 +12,10 @@ import { formatCurrency } from "@/lib/utils";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { use, useState } from "react";
+import { useState } from "react";
 
-export default function ClaimsOfficerClaimDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ClaimsOfficerClaimDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { convexUser } = useCurrentUser();
   const claim = useQuery(api.claims.getById, { id: id as Id<"claims"> });
   const [showAssign, setShowAssign] = useState(false);

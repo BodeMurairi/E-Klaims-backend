@@ -13,12 +13,12 @@ import { Label } from "@/components/ui/label";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, XCircle, FileQuestion } from "lucide-react";
 import Link from "next/link";
-import { use, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { PRODUCT_TYPES } from "@/lib/constants";
 
-export default function UnderwriterProposalReviewPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function UnderwriterProposalReviewPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { convexUser } = useCurrentUser();
   const proposal = useQuery(api.proposals.getById, { id: id as Id<"proposals"> });
   const client = useQuery(api.users.getById, proposal?.clientId ? { id: proposal.clientId } : "skip");

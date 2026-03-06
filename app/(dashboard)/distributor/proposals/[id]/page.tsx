@@ -9,11 +9,10 @@ import { DocumentList } from "@/components/documents/DocumentList";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
 import { PRODUCT_TYPES } from "@/lib/constants";
 
-export default function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ProposalDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const proposal = useQuery(api.proposals.getById, { id: id as Id<"proposals"> });
   const client = useQuery(api.users.getById, proposal?.clientId ? { id: proposal.clientId } : "skip");
 

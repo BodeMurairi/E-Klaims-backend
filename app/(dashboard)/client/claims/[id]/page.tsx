@@ -8,10 +8,9 @@ import { ClaimStatusBadge } from "@/components/claims/ClaimStatusBadge";
 import { ClaimDetailTabs } from "@/components/claims/ClaimDetailTabs";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
 
-export default function ClientClaimDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ClientClaimDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { convexUser } = useCurrentUser();
   const claim = useQuery(api.claims.getById, { id: id as Id<"claims"> });
 
