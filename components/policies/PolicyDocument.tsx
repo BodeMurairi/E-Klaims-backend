@@ -2,7 +2,7 @@
 
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { PRODUCT_COVERAGE, PRODUCT_TYPES, POLICY_STATUSES } from "@/lib/constants";
-import { CheckCircle2, Printer, Shield } from "lucide-react";
+import { CheckCircle2, Printer, Download, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -42,21 +42,36 @@ export function PolicyDocument({
       {/* Action bar — hidden on print */}
       <div className="flex items-center justify-between print:hidden">
         <h2 className="text-2xl font-bold text-gray-900">Policy Document</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={() => window.print()}
-        >
-          <Printer size={15} />
-          Print / Save as PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => window.print()}
+          >
+            <Printer size={15} />
+            Print
+          </Button>
+          <Button
+            size="sm"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            onClick={() => {
+              const prev = document.title;
+              document.title = `Policy-${policy.policyNumber}`;
+              window.print();
+              document.title = prev;
+            }}
+          >
+            <Download size={15} />
+            Download PDF
+          </Button>
+        </div>
       </div>
 
       {/* Policy Document */}
       <div
         id="policy-document"
-        className="bg-white rounded-xl border shadow-sm p-8 print:shadow-none print:border-none print:p-0"
+        className="bg-white rounded-xl border shadow-sm p-8 print:shadow-none print:border-none print:rounded-none print:p-8"
       >
         {/* Header */}
         <div className="flex items-start justify-between border-b pb-6 mb-6">

@@ -19,20 +19,30 @@ export default function ClientPolicyDetailPage({ params }: { params: { id: strin
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center gap-3 print:hidden">
-        <Link href="/client/policies" className="text-gray-400 hover:text-gray-600">
-          <ArrowLeft size={20} />
-        </Link>
-      </div>
+    <>
+      {/* Scoped print styles: hide the back-link wrapper and make content full-width */}
+      <style>{`
+        @media print {
+          body { background: white; }
+          .policy-page-back { display: none !important; }
+        }
+      `}</style>
 
-      <PolicyDocument
-        policy={policy}
-        clientName={client.name}
-        clientEmail={client.email}
-        distributorName={distributor?.name}
-        underwriterName={underwriter?.name}
-      />
-    </div>
+      <div className="space-y-6 max-w-3xl">
+        <div className="policy-page-back flex items-center gap-3">
+          <Link href="/client/policies" className="text-gray-400 hover:text-gray-600">
+            <ArrowLeft size={20} />
+          </Link>
+        </div>
+
+        <PolicyDocument
+          policy={policy}
+          clientName={client.name}
+          clientEmail={client.email}
+          distributorName={distributor?.name}
+          underwriterName={underwriter?.name}
+        />
+      </div>
+    </>
   );
 }
