@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -45,10 +45,43 @@ export function ProposalForm({ distributorId, redirectTo }: ProposalFormProps) {
   const [riskSummary, setRiskSummary] = useState<string | undefined>();
 
   const clients = useQuery(api.users.listByRole, { role: "client" });
+  const configuredRequirements = useQuery(api.documentRequirements.list, {
+    entityType: "proposal",
+  });
   const submitProposal = useMutation(api.proposals.submit);
   const runRiskScore = useAction(api.actions.aiStubs.runRiskScore);
 
   const matchedClient = clients?.find(c => c.email.toLowerCase() === clientEmail.toLowerCase());
+
+  const productOptions = useMemo(() => {
+    const configuredProductTypes = Array.from(
+      new Set((configuredRequirements ?? []).map((req) => req.productType))
+    );
+
+    if (configuredProductTypes.length === 0) {
+      return PRODUCT_TYPES.map((product) => ({
+        value: product.value,
+        label: product.label,
+      }));
+    }
+
+    const defaultLabels = new Map<string, string>(
+      PRODUCT_TYPES.map((product) => [product.value, product.label] as [string, string])
+    );
+
+    return configuredProductTypes
+      .sort((a, b) => a.localeCompare(b))
+      .map((productType) => ({
+        value: productType,
+        label:
+          defaultLabels.get(productType) ??
+          productType
+            .split(/[_-]+/)
+            .filter(Boolean)
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" "),
+      }));
+  }, [configuredRequirements]);
 
   const handleStep1Submit = async () => {
     if (!matchedClient || !productType || !sumInsured) { toast.error("Fill all required fields and ensure client email matches a registered client"); return; }
@@ -110,7 +143,13 @@ export function ProposalForm({ distributorId, redirectTo }: ProposalFormProps) {
               <Label>Product Type <span className="text-red-500">*</span></Label>
               <Select value={productType} onValueChange={setProductType}>
                 <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                <SelectContent>{PRODUCT_TYPES.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  {productOptions.map((product) => (
+                    <SelectItem key={product.value} value={product.value}>
+                      {product.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">

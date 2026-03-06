@@ -10,9 +10,7 @@ import {
   Shield,
   Users,
   ClipboardList,
-  Settings,
   ChevronRight,
-  AlertCircle,
   CheckCircle,
   UserCheck,
 } from "lucide-react";
@@ -51,8 +49,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   admin: [
     { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
     { label: "Users", href: "/admin/users", icon: <Users size={18} /> },
-    { label: "Document Requirements", href: "/admin/document-requirements", icon: <FileText size={18} /> },
-    { label: "Workflows", href: "/admin/workflows", icon: <Settings size={18} /> },
+    { label: "Policy Setup", href: "/admin/document-requirements", icon: <FileText size={18} /> },
   ],
 };
 
