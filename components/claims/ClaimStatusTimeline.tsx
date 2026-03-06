@@ -19,6 +19,7 @@ interface ClaimStatusTimelineProps {
   currentStatus: string;
 }
 
+type ClaimStatusValue = (typeof CLAIM_STATUSES)[number]["value"];
 const ALL_STATUSES = CLAIM_STATUSES.map((s) => s.value);
 
 export function ClaimStatusTimeline({ statusHistory, currentStatus }: ClaimStatusTimelineProps) {
@@ -74,7 +75,7 @@ export function ClaimStatusTimeline({ statusHistory, currentStatus }: ClaimStatu
       {!isRejected && !isPaid && (
         <>
           {ALL_STATUSES.slice(
-            ALL_STATUSES.indexOf(currentStatus) + 1
+            ALL_STATUSES.indexOf(currentStatus as ClaimStatusValue) + 1
           ).map((futureStatus) => {
             const statusInfo = CLAIM_STATUSES.find((s) => s.value === futureStatus);
             if (futureStatus === "rejected") return null;
