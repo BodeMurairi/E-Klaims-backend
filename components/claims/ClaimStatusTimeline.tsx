@@ -2,8 +2,6 @@
 
 import { formatDateTime } from "@/lib/utils";
 import { CLAIM_STATUSES } from "@/lib/constants";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { CheckCircle, Circle } from "lucide-react";
 
@@ -75,7 +73,7 @@ export function ClaimStatusTimeline({ statusHistory, currentStatus }: ClaimStatu
       {!isRejected && !isPaid && (
         <>
           {ALL_STATUSES.slice(
-            ALL_STATUSES.indexOf(currentStatus as ClaimStatusValue) + 1
+            ALL_STATUSES.findIndex((s) => s === currentStatus) + 1
           ).map((futureStatus) => {
             const statusInfo = CLAIM_STATUSES.find((s) => s.value === futureStatus);
             if (futureStatus === "rejected") return null;
