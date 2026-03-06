@@ -20,19 +20,29 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "rejected", label: "Rejected" },
 ];
 
-export default function ClientPoliciesPage() {
+function ClientName({ clientId }: { clientId: string }) {
+  const client = useQuery(api.users.getById, { id: clientId as any });
+  return <span className="text-xs text-gray-400">{client?.name ?? "—"}</span>;
+}
+
+export default function DistributorPoliciesPage() {
   const { convexUser } = useCurrentUser();
   const [filter, setFilter] = useState<FilterKey>("all");
 
-  const policies = useQuery(api.policies.listByClient, convexUser ? { clientId: convexUser._id } : "skip");
-  const proposals = useQuery(api.proposals.listByClient, convexUser ? { clientId: convexUser._id } : "skip");
+  const policies = useQuery(
+    api.policies.listByDistributor,
+    convexUser ? { distributorId: convexUser._id } : "skip"
+  );
+  const proposals = useQuery(
+    api.proposals.listByDistributor,
+    convexUser ? { distributorId: convexUser._id } : "skip"
+  );
 
   const isLoading = !policies || !proposals;
 
   // Proposals not yet converted to a policy
   const openProposals = (proposals ?? []).filter((p) => !p.convertedPolicyId);
 
-  // Build a unified list with type tag
   type PolicyItem =
     | { kind: "policy"; data: NonNullable<typeof policies>[number] }
     | { kind: "proposal"; data: (typeof openProposals)[number] };
@@ -56,7 +66,7 @@ export default function ClientPoliciesPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Policies</h2>
+      <h2 className="text-2xl font-bold text-gray-900">Client Policies</h2>
 
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">
@@ -83,7 +93,7 @@ export default function ClientPoliciesPage() {
           <Shield size={40} className="text-gray-200 mx-auto mb-3" />
           <p className="text-gray-500">
             {filter === "all"
-              ? "No policies yet. Contact your agent to get started."
+              ? "No policies yet for your clients."
               : `No ${FILTERS.find((f) => f.key === filter)?.label.toLowerCase()} items.`}
           </p>
         </div>
@@ -100,6 +110,7 @@ export default function ClientPoliciesPage() {
                     <div>
                       <p className="font-semibold text-gray-900">{policy.policyNumber}</p>
                       <p className="text-sm text-gray-500">{product?.label ?? policy.productType}</p>
+                      <ClientName clientId={policy.clientId} />
                     </div>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusInfo?.color ?? "bg-gray-100 text-gray-800")}>
                       {statusInfo?.label ?? policy.status}
@@ -126,7 +137,7 @@ export default function ClientPoliciesPage() {
                   </div>
                   <div className="mt-4 pt-4 border-t">
                     <Link
-                      href={`/client/policies/${policy._id}`}
+                      href={`/distributor/policies/${policy._id}`}
                       className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
                     >
                       <FileText size={14} />
@@ -161,6 +172,7 @@ export default function ClientPoliciesPage() {
                     <div>
                       <p className="font-semibold text-gray-900">{product?.label ?? proposal.productType}</p>
                       <p className="text-xs text-gray-400 mt-0.5">Application · {formatDate(proposal.createdAt)}</p>
+                      <ClientName clientId={proposal.clientId} />
                     </div>
                   </div>
                   <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusInfo?.color ?? "bg-gray-100 text-gray-800")}>
@@ -199,6 +211,16 @@ export default function ClientPoliciesPage() {
                     <p className="text-sm text-gray-700">{proposal.underwriterNotes}</p>
                   </div>
                 )}
+
+                <div className="mt-4 pt-4 border-t">
+                  <Link
+                    href={`/distributor/proposals/${proposal._id}`}
+                    className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    <FileText size={14} />
+                    View Application
+                  </Link>
+                </div>
               </div>
             );
           })}

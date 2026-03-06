@@ -446,6 +446,7 @@ export const updateStatus = mutation({
     underwriterNotes: v.optional(v.string()),
     rejectionReason: v.optional(v.string()),
     underwriterId: v.optional(v.id("users")),
+    requestedDocuments: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const proposal = await ctx.db.get(args.proposalId);
@@ -544,14 +545,18 @@ export const updateStatus = mutation({
         });
       }
     } else if (args.status === "more_documents") {
+      const docNote = args.requestedDocuments
+        ? ` Required: ${args.requestedDocuments}`
+        : "";
+
       // Notify client
       await ctx.db.insert("notifications", {
         userId: proposal.clientId,
         title: "Additional Documents Required",
-        message: `Additional documents are required for your ${proposal.productType} proposal.`,
+        message: `Additional documents are required for your ${proposal.productType} proposal.${docNote}`,
         read: false,
         type: "document_required",
-        link: `/client`,
+        link: `/client/policies`,
         entityId: args.proposalId,
         createdAt: now,
       });
@@ -561,7 +566,7 @@ export const updateStatus = mutation({
         await ctx.db.insert("notifications", {
           userId: proposal.distributorId,
           title: "Documents Required",
-          message: `Additional documents are required for a ${proposal.productType} proposal.`,
+          message: `Additional documents are required for a ${proposal.productType} proposal.${docNote}`,
           read: false,
           type: "document_required",
           link: `/distributor/proposals/${args.proposalId}`,
