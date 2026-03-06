@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/utils";
-import { File, CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import { File, CheckCircle, AlertTriangle, Clock, Eye, Download } from "lucide-react";
 import { AIVerificationBadge } from "./AIVerificationBadge";
 
 interface DocumentListProps {
@@ -45,14 +45,25 @@ export function DocumentList({ entityId, entityType, showVerification = false }:
           )}
 
           {doc.fileUrl && (
-            <a
-              href={doc.fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:underline flex-shrink-0"
-            >
-              View
-            </a>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <a
+                href={doc.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Preview document"
+                className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
+              >
+                <Eye size={15} />
+              </a>
+              <a
+                href={doc.fileUrl}
+                download={doc.name}
+                title="Download document"
+                className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-green-600 transition-colors"
+              >
+                <Download size={15} />
+              </a>
+            </div>
           )}
 
           <div className="flex-shrink-0">

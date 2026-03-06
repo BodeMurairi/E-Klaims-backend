@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 export const create = mutation({
   args: {
@@ -17,7 +18,7 @@ export const create = mutation({
     uploadedBy: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const fileUrl = await ctx.storage.getUrl(args.fileId);
+    const fileUrl = await ctx.storage.getUrl(args.fileId as Id<"_storage">);
     return ctx.db.insert("documents", {
       name: args.name,
       fileId: args.fileId,
@@ -45,12 +46,19 @@ export const getByEntity = query({
     ),
   },
   handler: async (ctx, { entityId, entityType }) => {
-    return ctx.db
+    const docs = await ctx.db
       .query("documents")
       .withIndex("by_entity", (q) =>
         q.eq("entityId", entityId).eq("entityType", entityType)
       )
       .collect();
+
+    return Promise.all(
+      docs.map(async (doc) => ({
+        ...doc,
+        fileUrl: await ctx.storage.getUrl(doc.fileId as Id<"_storage">) ?? doc.fileUrl,
+      }))
+    );
   },
 });
 
@@ -88,7 +96,7 @@ export const remove = mutation({
   handler: async (ctx, { documentId }) => {
     const doc = await ctx.db.get(documentId);
     if (!doc) throw new Error("Document not found");
-    await ctx.storage.delete(doc.fileId);
+    await ctx.storage.delete(doc.fileId as Id<"_storage">);
     await ctx.db.delete(documentId);
   },
 });
