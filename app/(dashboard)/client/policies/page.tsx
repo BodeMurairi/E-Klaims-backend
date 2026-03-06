@@ -4,18 +4,17 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { Shield, FileText, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { Shield, FileText, XCircle, AlertTriangle, ChevronRight } from "lucide-react";
 import { POLICY_STATUSES, PROPOSAL_STATUSES, PRODUCT_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 
-type FilterKey = "all" | "active" | "pending" | "more_documents" | "rejected";
+type FilterKey = "all" | "active" | "more_documents" | "rejected";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "active", label: "Active" },
-  { key: "pending", label: "Pending / Under Review" },
   { key: "more_documents", label: "More Documents" },
   { key: "rejected", label: "Rejected" },
 ];
@@ -29,8 +28,10 @@ export default function ClientPoliciesPage() {
 
   const isLoading = !policies || !proposals;
 
-  // Proposals not yet converted to a policy
-  const openProposals = (proposals ?? []).filter((p) => !p.convertedPolicyId);
+  // Only show proposals the client can act on: rejected or awaiting more documents
+  const openProposals = (proposals ?? []).filter(
+    (p) => !p.convertedPolicyId && (p.status === "rejected" || p.status === "more_documents")
+  );
 
   // Build a unified list with type tag
   type PolicyItem =
@@ -45,8 +46,6 @@ export default function ClientPoliciesPage() {
   const filtered = allItems.filter((item) => {
     if (filter === "all") return true;
     if (filter === "active") return item.kind === "policy" && item.data.status === "active";
-    if (filter === "pending")
-      return item.kind === "proposal" && ["pending", "under_review"].includes(item.data.status);
     if (filter === "more_documents")
       return item.kind === "proposal" && item.data.status === "more_documents";
     if (filter === "rejected")
@@ -95,7 +94,11 @@ export default function ClientPoliciesPage() {
               const statusInfo = POLICY_STATUSES.find((s) => s.value === policy.status);
               const product = PRODUCT_TYPES.find((p) => p.value === policy.productType);
               return (
-                <div key={policy._id} className="bg-white rounded-xl border p-5 shadow-sm">
+                <Link
+                  key={policy._id}
+                  href={`/client/policies/${policy._id}`}
+                  className="block bg-white rounded-xl border p-5 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer"
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-semibold text-gray-900">{policy.policyNumber}</p>
@@ -124,16 +127,11 @@ export default function ClientPoliciesPage() {
                       <p className="text-gray-700">{formatDate(policy.endDate)}</p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <Link
-                      href={`/client/policies/${policy._id}`}
-                      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      <FileText size={14} />
-                      View Policy Document
-                    </Link>
+                  <div className="mt-4 pt-4 border-t flex items-center gap-2 text-sm text-blue-600 font-medium">
+                    <FileText size={14} />
+                    View Policy Document
                   </div>
-                </div>
+                </Link>
               );
             }
 
@@ -144,28 +142,36 @@ export default function ClientPoliciesPage() {
             const isRejected = proposal.status === "rejected";
             const needsDocs = proposal.status === "more_documents";
 
+            const CardWrapper = needsDocs ? Link : "div";
+            const cardProps = needsDocs
+              ? { href: `/client/policies/resubmit/${proposal._id}` }
+              : {};
+
             return (
-              <div
+              <CardWrapper
                 key={proposal._id}
+                {...(cardProps as any)}
                 className={cn(
-                  "bg-white rounded-xl border p-5 shadow-sm",
+                  "block bg-white rounded-xl border p-5 shadow-sm",
                   isRejected && "border-red-100 bg-red-50/30",
-                  needsDocs && "border-orange-100 bg-orange-50/20"
+                  needsDocs && "border-orange-200 bg-orange-50/20 hover:shadow-md hover:border-orange-300 transition-all cursor-pointer"
                 )}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     {isRejected && <XCircle size={16} className="text-red-400 flex-shrink-0" />}
                     {needsDocs && <AlertTriangle size={16} className="text-orange-400 flex-shrink-0" />}
-                    {!isRejected && !needsDocs && <Clock size={16} className="text-gray-300 flex-shrink-0" />}
                     <div>
                       <p className="font-semibold text-gray-900">{product?.label ?? proposal.productType}</p>
                       <p className="text-xs text-gray-400 mt-0.5">Application · {formatDate(proposal.createdAt)}</p>
                     </div>
                   </div>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusInfo?.color ?? "bg-gray-100 text-gray-800")}>
-                    {statusInfo?.label ?? proposal.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusInfo?.color ?? "bg-gray-100 text-gray-800")}>
+                      {statusInfo?.label ?? proposal.status}
+                    </span>
+                    {needsDocs && <ChevronRight size={14} className="text-orange-400" />}
+                  </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -186,6 +192,10 @@ export default function ClientPoliciesPage() {
                   </div>
                 )}
 
+                {needsDocs && (
+                  <p className="mt-3 text-xs text-orange-600 font-medium">Tap to upload required documents →</p>
+                )}
+
                 {isRejected && proposal.rejectionReason && (
                   <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
                     <p className="text-xs font-medium text-red-600 mb-0.5">Reason for Decline</p>
@@ -199,7 +209,7 @@ export default function ClientPoliciesPage() {
                     <p className="text-sm text-gray-700">{proposal.underwriterNotes}</p>
                   </div>
                 )}
-              </div>
+              </CardWrapper>
             );
           })}
         </div>

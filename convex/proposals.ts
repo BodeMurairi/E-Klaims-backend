@@ -578,6 +578,60 @@ export const updateStatus = mutation({
   },
 });
 
+export const resubmitWithDocuments = mutation({
+  args: {
+    proposalId: v.id("proposals"),
+    clientNote: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const proposal = await ctx.db.get(args.proposalId);
+    if (!proposal) throw new Error("Proposal not found");
+    if (proposal.status !== "more_documents") throw new Error("Proposal is not awaiting documents");
+
+    const now = Date.now();
+
+    await ctx.db.patch(args.proposalId, {
+      status: "under_review",
+      updatedAt: now,
+    });
+
+    const noteText = args.clientNote ? ` Client note: "${args.clientNote}"` : "";
+
+    // Notify distributor/agent
+    if (proposal.distributorId) {
+      await ctx.db.insert("notifications", {
+        userId: proposal.distributorId,
+        title: "Client Submitted Additional Documents",
+        message: `Your client has submitted additional documents for the ${proposal.productType} proposal.${noteText}`,
+        read: false,
+        type: "document_required",
+        link: `/distributor/proposals/${args.proposalId}`,
+        entityId: args.proposalId,
+        createdAt: now,
+      });
+    }
+
+    // Notify all underwriters
+    const underwriters = await ctx.db
+      .query("users")
+      .withIndex("by_role", (q) => q.eq("role", "underwriter"))
+      .collect();
+
+    for (const uw of underwriters) {
+      await ctx.db.insert("notifications", {
+        userId: uw._id,
+        title: "Additional Documents Submitted",
+        message: `A client submitted additional documents for a ${proposal.productType} proposal. Please review.${noteText}`,
+        read: false,
+        type: "proposal_status",
+        link: `/underwriter/proposals/${args.proposalId}`,
+        entityId: args.proposalId,
+        createdAt: now,
+      });
+    }
+  },
+});
+
 export const setAiRiskScore = mutation({
   args: {
     proposalId: v.id("proposals"),
