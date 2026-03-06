@@ -18,6 +18,7 @@ interface ClaimDetailTabsProps {
     location: string;
     estimatedLoss: number;
     approvedAmount?: number;
+    rejectionReason?: string;
     voiceNoteTranscript?: string;
     assessmentFindings?: string;
     assessmentRecommendedAmount?: number;
@@ -63,6 +64,13 @@ export function ClaimDetailTabs({ claim, currentUserId, isClient = false }: Clai
           <p className="text-xs text-gray-400 mb-1">Description of Loss</p>
           <p className="text-sm text-gray-800 leading-relaxed">{claim.description}</p>
         </div>
+
+        {claim.status === "rejected" && claim.rejectionReason && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-2">Claim Rejected — Reason</p>
+            <p className="text-sm text-red-800 leading-relaxed">{claim.rejectionReason}</p>
+          </div>
+        )}
 
         {claim.assessmentFindings && (
           <div className="bg-white rounded-lg border p-4">

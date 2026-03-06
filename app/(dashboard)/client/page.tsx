@@ -136,6 +136,14 @@ export default function ClientDashboard() {
                 <p className="text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-2 mb-3">
                   Your agent has prepared this application on your behalf. By confirming, you authorize this application to be submitted for underwriter review.
                 </p>
+                <div className="mb-3">
+                  <Link
+                    href={`/client/proposals/${proposal._id}`}
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline font-medium"
+                  >
+                    View Full Application & Documents →
+                  </Link>
+                </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleConfirm(proposal._id)}
@@ -230,6 +238,14 @@ export default function ClientDashboard() {
                       "{proposal.underwriterNotes}"
                     </p>
                   )}
+                  <div className="mt-3 pt-3 border-t">
+                    <Link
+                      href={`/client/proposals/${proposal._id}`}
+                      className="text-xs text-blue-600 hover:underline font-medium"
+                    >
+                      View Application →
+                    </Link>
+                  </div>
                 </div>
               );
             })}

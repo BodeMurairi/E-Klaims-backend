@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { ClaimCard } from "@/components/claims/ClaimCard";
-import { Plus, FileText, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Plus, FileText, AlertTriangle, CheckCircle, XCircle, Eye } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -60,7 +60,15 @@ function PendingClaimBanner({ claim, clientId }: {
           </p>
         </div>
       </div>
-      <div className="flex gap-3 mt-4">
+      <div className="mb-3">
+        <Link
+          href={`/client/claims/${claim._id}`}
+          className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline font-medium"
+        >
+          <Eye size={12} /> View Full Claim Details & Documents →
+        </Link>
+      </div>
+      <div className="flex gap-3">
         <button
           onClick={handleDecline}
           disabled={!!loading}
@@ -94,7 +102,7 @@ export default function ClientClaimsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">My Claims</h2>
         <Link href="/client/claims/new" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-          <Plus size={16} /> File New Claim
+          <Plus size={16} /> File a Claim
         </Link>
       </div>
 

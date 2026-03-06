@@ -48,14 +48,14 @@ export const submit = mutation({
     const id = await ctx.db.insert("claims", {
       ...args,
       claimId,
-      status: "submitted",
+      status: "under_review",
       approvedAmount: undefined,
       statusHistory: [
         {
-          status: "submitted",
+          status: "under_review",
           timestamp: now,
           userId: args.submittedBy,
-          notes: "Claim submitted",
+          notes: "Claim submitted and under review",
         },
       ],
       createdAt: now,
@@ -163,7 +163,7 @@ export const sendForClientConfirmation = mutation({
       message: `Your agent ${agent?.name ?? "your agent"} has submitted claim ${claim.claimId} on your behalf. Please review and confirm.`,
       read: false,
       type: "claim_status",
-      link: `/client/claims`,
+      link: `/client/claims/${claimId}`,
       entityId: claimId,
       createdAt: now,
     });
@@ -184,9 +184,10 @@ export const confirmByClient = mutation({
     const now = Date.now();
     await ctx.db.patch(claimId, {
       pendingClientConfirmation: false,
+      status: "under_review",
       statusHistory: [
         ...claim.statusHistory,
-        { status: "submitted", timestamp: now, userId: clientId, notes: "Confirmed by client" },
+        { status: "under_review", timestamp: now, userId: clientId, notes: "Confirmed by client — now under review" },
       ],
       updatedAt: now,
     });

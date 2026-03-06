@@ -146,7 +146,7 @@ export default function ClientPoliciesPage() {
                         onClick={(e) => e.stopPropagation()}
                         className="flex items-center gap-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors"
                       >
-                        Process a Claim
+                        File a Claim
                       </Link>
                     )}
                   </div>

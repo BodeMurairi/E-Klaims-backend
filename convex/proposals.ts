@@ -72,7 +72,7 @@ export const submitFromOnboarding = mutation({
       productType: args.productType,
       riskDetails: args.riskDetails,
       sumInsured: args.sumInsured,
-      status: "pending",
+      status: "under_review",
       documents: [],
       createdAt: now,
       updatedAt: now,
@@ -214,7 +214,7 @@ export const submitAgentOnboarding = mutation({
       message: `Agent ${agent.name} has prepared a ${args.productType} insurance application on your behalf. Please review and confirm.`,
       read: false,
       type: "proposal_status",
-      link: `/client`,
+      link: `/client/proposals/${proposalId}`,
       entityId: proposalId,
       createdAt: now,
     });
@@ -231,6 +231,7 @@ export const confirmAgentOnboarding = mutation({
 
     await ctx.db.patch(proposalId, {
       pendingClientConfirmation: false,
+      status: "under_review",
       updatedAt: Date.now(),
     });
 
