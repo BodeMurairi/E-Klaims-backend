@@ -51,6 +51,53 @@ export const ROLE_DASHBOARD_PATHS: Record<string, string> = {
   admin: "/admin",
 };
 
+export const PRODUCT_COVERAGE: Record<string, { label: string; benefits: { name: string; description: string }[] }> = {
+  motor: {
+    label: "Motor Insurance",
+    benefits: [
+      { name: "Third-Party Liability", description: "Covers bodily injury and property damage to third parties arising from road accidents" },
+      { name: "Own Vehicle Damage", description: "Covers repair costs for your vehicle following a collision or accident" },
+      { name: "Theft & Fire", description: "Full coverage against vehicle theft and fire damage" },
+      { name: "Medical Expenses", description: "Medical and hospitalisation costs arising from road traffic accidents" },
+      { name: "Roadside Assistance", description: "24/7 emergency breakdown and towing service nationwide" },
+      { name: "Natural Catastrophes", description: "Damage from flood, hail, windstorm, and earthquake" },
+    ],
+  },
+  health: {
+    label: "Health Insurance",
+    benefits: [
+      { name: "Inpatient Hospitalization", description: "Full room, board, nursing care, and medications during hospital admission" },
+      { name: "Outpatient Consultation", description: "GP and specialist visits including diagnostic tests and prescribed medication" },
+      { name: "Surgical Procedures", description: "Elective and emergency surgery including anaesthesia and theatre fees" },
+      { name: "Emergency & Ambulance", description: "Emergency treatment and ambulance transport to nearest facility" },
+      { name: "Maternity Care", description: "Prenatal visits, normal and caesarean delivery, and postnatal follow-up" },
+      { name: "Dental & Optical", description: "Routine dental check-ups and corrective eyewear allowance" },
+    ],
+  },
+  property: {
+    label: "Property Insurance",
+    benefits: [
+      { name: "Building Structure", description: "Covers structural damage to walls, roof, floors, and foundation" },
+      { name: "Contents & Belongings", description: "Personal property and home contents covered up to sum insured" },
+      { name: "Fire & Explosion", description: "Damage caused by fire, explosions, or electrical faults" },
+      { name: "Flood & Water Damage", description: "Internal and external flooding and water ingress" },
+      { name: "Theft & Burglary", description: "Loss or damage resulting from break-ins and burglary" },
+      { name: "Public Liability", description: "Third-party injury or property damage occurring on your premises" },
+    ],
+  },
+  life: {
+    label: "Life Insurance",
+    benefits: [
+      { name: "Death Benefit", description: "Lump-sum payment to named beneficiaries upon the insured's death" },
+      { name: "Terminal Illness", description: "Early benefit payout upon diagnosis of a terminal illness" },
+      { name: "Permanent Disability", description: "Full sum insured paid on total and permanent disability" },
+      { name: "Accidental Death Benefit", description: "Additional payout in the event of accidental death" },
+      { name: "Critical Illness Rider", description: "Coverage for cancer, stroke, heart attack, and kidney failure" },
+      { name: "Premium Waiver", description: "Future premiums waived upon disability or critical illness diagnosis" },
+    ],
+  },
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   client: "Client",
   distributor: "Agent / Broker",

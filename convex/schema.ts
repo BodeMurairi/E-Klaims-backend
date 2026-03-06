@@ -33,7 +33,7 @@ export default defineSchema({
   policies: defineTable({
     policyNumber: v.string(),
     clientId: v.id("users"),
-    distributorId: v.id("users"),
+    distributorId: v.optional(v.id("users")),
     underwriterId: v.optional(v.id("users")),
     productType: v.string(),
     sumInsured: v.number(),

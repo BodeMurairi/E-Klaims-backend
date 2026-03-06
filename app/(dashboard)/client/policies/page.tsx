@@ -4,9 +4,10 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { Shield } from "lucide-react";
+import { Shield, FileText } from "lucide-react";
 import { POLICY_STATUSES, PRODUCT_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function ClientPoliciesPage() {
   const { convexUser } = useCurrentUser();
@@ -57,6 +58,15 @@ export default function ClientPoliciesPage() {
                     <p className="text-xs text-gray-400">Expiry Date</p>
                     <p className="text-gray-700">{formatDate(policy.endDate)}</p>
                   </div>
+                </div>
+                <div className="mt-4 pt-4 border-t">
+                  <Link
+                    href={`/client/policies/${policy._id}`}
+                    className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    <FileText size={14} />
+                    View Policy Document
+                  </Link>
                 </div>
               </div>
             );

@@ -63,7 +63,7 @@ export const listAll = query({
 export const create = mutation({
   args: {
     clientId: v.id("users"),
-    distributorId: v.id("users"),
+    distributorId: v.optional(v.id("users")),
     underwriterId: v.optional(v.id("users")),
     productType: v.string(),
     sumInsured: v.number(),

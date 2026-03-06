@@ -451,34 +451,124 @@ export const updateStatus = mutation({
     const proposal = await ctx.db.get(args.proposalId);
     if (!proposal) throw new Error("Proposal not found");
 
+    const now = Date.now();
+    const underwriterId = args.underwriterId ?? proposal.underwriterId;
+
     await ctx.db.patch(args.proposalId, {
       status: args.status,
       underwriterNotes: args.underwriterNotes ?? proposal.underwriterNotes,
       rejectionReason: args.rejectionReason,
-      underwriterId: args.underwriterId ?? proposal.underwriterId,
-      updatedAt: Date.now(),
+      underwriterId,
+      updatedAt: now,
     });
 
-    const now = Date.now();
-    const statusLabels: Record<string, string> = {
-      approved: "Your proposal has been approved!",
-      rejected: "Your proposal has been rejected.",
-      more_documents: "Additional documents required for your proposal.",
-      under_review: "Your proposal is now under review.",
-    };
+    if (args.status === "approved") {
+      // Create active policy (1-year coverage from today)
+      const count = (await ctx.db.query("policies").collect()).length + 1;
+      const year = new Date().getFullYear();
+      const policyNumber = `POL-${year}-${String(count).padStart(4, "0")}`;
+      const startDate = now;
+      const endDate = now + 365 * 24 * 60 * 60 * 1000;
 
-    const message = statusLabels[args.status];
-    if (message) {
+      const policyId = await ctx.db.insert("policies", {
+        policyNumber,
+        clientId: proposal.clientId,
+        distributorId: proposal.distributorId,
+        underwriterId,
+        productType: proposal.productType,
+        sumInsured: proposal.sumInsured,
+        premium: proposal.premium ?? Math.round(proposal.sumInsured * 0.05),
+        status: "active",
+        startDate,
+        endDate,
+        documents: [],
+        notes: args.underwriterNotes,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Link policy back to proposal
+      await ctx.db.patch(args.proposalId, { convertedPolicyId: policyId });
+
+      // Notify client
       await ctx.db.insert("notifications", {
-        userId: proposal.distributorId,
-        title: "Proposal Status Updated",
-        message,
+        userId: proposal.clientId,
+        title: "Proposal Approved — Policy Issued",
+        message: `Your ${proposal.productType} insurance proposal has been approved. Policy ${policyNumber} is now active.`,
         read: false,
         type: "proposal_status",
-        link: `/distributor/proposals/${args.proposalId}`,
+        link: `/client/policies/${policyId}`,
+        entityId: policyId,
+        createdAt: now,
+      });
+
+      // Notify distributor/agent
+      if (proposal.distributorId) {
+        await ctx.db.insert("notifications", {
+          userId: proposal.distributorId,
+          title: "Proposal Approved",
+          message: `The ${proposal.productType} proposal has been approved. Policy ${policyNumber} is now active.`,
+          read: false,
+          type: "proposal_status",
+          link: `/distributor/proposals/${args.proposalId}`,
+          entityId: args.proposalId,
+          createdAt: now,
+        });
+      }
+    } else if (args.status === "rejected") {
+      const reasonSuffix = args.rejectionReason ? ` Reason: ${args.rejectionReason}` : "";
+
+      // Notify client
+      await ctx.db.insert("notifications", {
+        userId: proposal.clientId,
+        title: "Proposal Rejected",
+        message: `Your ${proposal.productType} insurance proposal has been rejected.${reasonSuffix}`,
+        read: false,
+        type: "proposal_status",
+        link: `/client`,
         entityId: args.proposalId,
         createdAt: now,
       });
+
+      // Notify distributor/agent
+      if (proposal.distributorId) {
+        await ctx.db.insert("notifications", {
+          userId: proposal.distributorId,
+          title: "Proposal Rejected",
+          message: `A ${proposal.productType} proposal has been rejected.${reasonSuffix}`,
+          read: false,
+          type: "proposal_status",
+          link: `/distributor/proposals/${args.proposalId}`,
+          entityId: args.proposalId,
+          createdAt: now,
+        });
+      }
+    } else if (args.status === "more_documents") {
+      // Notify client
+      await ctx.db.insert("notifications", {
+        userId: proposal.clientId,
+        title: "Additional Documents Required",
+        message: `Additional documents are required for your ${proposal.productType} proposal.`,
+        read: false,
+        type: "document_required",
+        link: `/client`,
+        entityId: args.proposalId,
+        createdAt: now,
+      });
+
+      // Notify distributor/agent
+      if (proposal.distributorId) {
+        await ctx.db.insert("notifications", {
+          userId: proposal.distributorId,
+          title: "Documents Required",
+          message: `Additional documents are required for a ${proposal.productType} proposal.`,
+          read: false,
+          type: "document_required",
+          link: `/distributor/proposals/${args.proposalId}`,
+          entityId: args.proposalId,
+          createdAt: now,
+        });
+      }
     }
   },
 });
