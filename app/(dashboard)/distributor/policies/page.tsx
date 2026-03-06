@@ -135,7 +135,7 @@ export default function DistributorPoliciesPage() {
                       <p className="text-gray-700">{formatDate(policy.endDate)}</p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t">
+                  <div className="mt-4 pt-4 border-t flex items-center justify-between">
                     <Link
                       href={`/distributor/policies/${policy._id}`}
                       className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -143,6 +143,14 @@ export default function DistributorPoliciesPage() {
                       <FileText size={14} />
                       View Policy Document
                     </Link>
+                    {policy.status === "active" && (
+                      <Link
+                        href={`/distributor/claims/new?policyId=${policy._id}&clientId=${policy.clientId}`}
+                        className="flex items-center gap-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        File a Claim
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

@@ -4,9 +4,12 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ClaimForm } from "@/components/claims/ClaimForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function NewClaimPage() {
   const { convexUser } = useCurrentUser();
+  const searchParams = useSearchParams();
+  const defaultPolicyId = searchParams.get("policyId") ?? undefined;
 
   if (!convexUser) return <div className="text-gray-400 text-sm">Loading...</div>;
 
@@ -18,7 +21,12 @@ export default function NewClaimPage() {
         </Link>
         <h2 className="text-2xl font-bold text-gray-900">File a Claim</h2>
       </div>
-      <ClaimForm clientId={convexUser._id} submittedBy={convexUser._id} redirectTo="/client/claims" />
+      <ClaimForm
+        clientId={convexUser._id}
+        submittedBy={convexUser._id}
+        redirectTo="/client/claims"
+        defaultPolicyId={defaultPolicyId}
+      />
     </div>
   );
 }

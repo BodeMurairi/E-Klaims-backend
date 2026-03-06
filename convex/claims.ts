@@ -1,6 +1,5 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 // Allowed status transitions (server-side enforcement)
 const TRANSITIONS: Record<string, string[]> = {
@@ -93,6 +92,150 @@ export const submit = mutation({
     });
 
     return { id, claimId };
+  },
+});
+
+// Agent creates a claim draft on behalf of client — no notification yet
+export const submitByAgent = mutation({
+  args: {
+    policyId: v.id("policies"),
+    clientId: v.id("users"),
+    distributorId: v.id("users"),
+    dateOfLoss: v.number(),
+    description: v.string(),
+    location: v.string(),
+    estimatedLoss: v.number(),
+    documents: v.array(v.id("documents")),
+  },
+  handler: async (ctx, args) => {
+    const count = (await ctx.db.query("claims").collect()).length + 1;
+    const year = new Date().getFullYear();
+    const claimId = `CLM-${year}-${String(count).padStart(4, "0")}`;
+    const now = Date.now();
+
+    const id = await ctx.db.insert("claims", {
+      policyId: args.policyId,
+      clientId: args.clientId,
+      submittedBy: args.distributorId,
+      dateOfLoss: args.dateOfLoss,
+      description: args.description,
+      location: args.location,
+      estimatedLoss: args.estimatedLoss,
+      documents: args.documents,
+      claimId,
+      status: "submitted",
+      approvedAmount: undefined,
+      pendingClientConfirmation: true,
+      initiatedByDistributorId: args.distributorId,
+      statusHistory: [
+        {
+          status: "submitted",
+          timestamp: now,
+          userId: args.distributorId,
+          notes: "Claim initiated by agent — awaiting client confirmation",
+        },
+      ],
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return { id, claimId };
+  },
+});
+
+// Agent sends the claim for client confirmation after uploading documents
+export const sendForClientConfirmation = mutation({
+  args: {
+    claimId: v.id("claims"),
+    distributorId: v.id("users"),
+  },
+  handler: async (ctx, { claimId, distributorId }) => {
+    const claim = await ctx.db.get(claimId);
+    if (!claim) throw new Error("Claim not found");
+    if (claim.initiatedByDistributorId !== distributorId) throw new Error("Not authorised");
+
+    const agent = await ctx.db.get(distributorId);
+    const now = Date.now();
+
+    await ctx.db.insert("notifications", {
+      userId: claim.clientId,
+      title: "Claim Submitted on Your Behalf",
+      message: `Your agent ${agent?.name ?? "your agent"} has submitted claim ${claim.claimId} on your behalf. Please review and confirm.`,
+      read: false,
+      type: "claim_status",
+      link: `/client/claims`,
+      entityId: claimId,
+      createdAt: now,
+    });
+  },
+});
+
+// Client confirms an agent-initiated claim → notifies claims officers
+export const confirmByClient = mutation({
+  args: {
+    claimId: v.id("claims"),
+    clientId: v.id("users"),
+  },
+  handler: async (ctx, { claimId, clientId }) => {
+    const claim = await ctx.db.get(claimId);
+    if (!claim) throw new Error("Claim not found");
+    if (claim.clientId !== clientId) throw new Error("Not authorised");
+
+    const now = Date.now();
+    await ctx.db.patch(claimId, {
+      pendingClientConfirmation: false,
+      statusHistory: [
+        ...claim.statusHistory,
+        { status: "submitted", timestamp: now, userId: clientId, notes: "Confirmed by client" },
+      ],
+      updatedAt: now,
+    });
+
+    // Notify claims officers
+    const officers = await ctx.db.query("users").withIndex("by_role", (q) => q.eq("role", "claims_officer")).collect();
+    for (const officer of officers) {
+      await ctx.db.insert("notifications", {
+        userId: officer._id,
+        title: "New Claim Submitted",
+        message: `Claim ${claim.claimId} has been confirmed by the client and requires review.`,
+        read: false,
+        type: "claim_status",
+        link: `/claims-officer/claims/${claimId}`,
+        entityId: claimId,
+        createdAt: now,
+      });
+    }
+  },
+});
+
+// Client declines an agent-initiated claim → removes it
+export const declineByClient = mutation({
+  args: {
+    claimId: v.id("claims"),
+    clientId: v.id("users"),
+  },
+  handler: async (ctx, { claimId, clientId }) => {
+    const claim = await ctx.db.get(claimId);
+    if (!claim) throw new Error("Claim not found");
+    if (claim.clientId !== clientId) throw new Error("Not authorised");
+
+    const now = Date.now();
+
+    // Notify the agent
+    if (claim.initiatedByDistributorId) {
+      await ctx.db.insert("notifications", {
+        userId: claim.initiatedByDistributorId,
+        title: "Claim Declined by Client",
+        message: `The client declined claim ${claim.claimId} that you submitted on their behalf.`,
+        read: false,
+        type: "claim_status",
+        link: `/distributor/policies`,
+        entityId: claimId,
+        createdAt: now,
+      });
+    }
+
+    await ctx.db.delete(claimId);
   },
 });
 

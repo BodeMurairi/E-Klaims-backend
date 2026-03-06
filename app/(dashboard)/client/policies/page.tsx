@@ -4,17 +4,18 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { Shield, FileText, XCircle, AlertTriangle, ChevronRight } from "lucide-react";
+import { Shield, FileText, XCircle, AlertTriangle, ChevronRight, Clock } from "lucide-react";
 import { POLICY_STATUSES, PROPOSAL_STATUSES, PRODUCT_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 
-type FilterKey = "all" | "active" | "more_documents" | "rejected";
+type FilterKey = "all" | "active" | "under_review" | "more_documents" | "rejected";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "active", label: "Active" },
+  { key: "under_review", label: "Under Review" },
   { key: "more_documents", label: "More Documents" },
   { key: "rejected", label: "Rejected" },
 ];
@@ -28,9 +29,14 @@ export default function ClientPoliciesPage() {
 
   const isLoading = !policies || !proposals;
 
-  // Only show proposals the client can act on: rejected or awaiting more documents
+  // Show all non-converted proposals (under review, more docs needed, or rejected)
   const openProposals = (proposals ?? []).filter(
-    (p) => !p.convertedPolicyId && (p.status === "rejected" || p.status === "more_documents")
+    (p) => !p.convertedPolicyId && (
+      p.status === "pending" ||
+      p.status === "under_review" ||
+      p.status === "rejected" ||
+      p.status === "more_documents"
+    )
   );
 
   // Build a unified list with type tag
@@ -46,6 +52,8 @@ export default function ClientPoliciesPage() {
   const filtered = allItems.filter((item) => {
     if (filter === "all") return true;
     if (filter === "active") return item.kind === "policy" && item.data.status === "active";
+    if (filter === "under_review")
+      return item.kind === "proposal" && (item.data.status === "pending" || item.data.status === "under_review");
     if (filter === "more_documents")
       return item.kind === "proposal" && item.data.status === "more_documents";
     if (filter === "rejected")
@@ -127,9 +135,20 @@ export default function ClientPoliciesPage() {
                       <p className="text-gray-700">{formatDate(policy.endDate)}</p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t flex items-center gap-2 text-sm text-blue-600 font-medium">
-                    <FileText size={14} />
-                    View Policy Document
+                  <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                      <FileText size={14} />
+                      View Policy Document
+                    </span>
+                    {policy.status === "active" && (
+                      <Link
+                        href={`/client/claims/new?policyId=${policy._id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Process a Claim
+                      </Link>
+                    )}
                   </div>
                 </Link>
               );
@@ -141,6 +160,7 @@ export default function ClientPoliciesPage() {
             const product = PRODUCT_TYPES.find((p) => p.value === proposal.productType);
             const isRejected = proposal.status === "rejected";
             const needsDocs = proposal.status === "more_documents";
+            const isUnderReview = proposal.status === "pending" || proposal.status === "under_review";
 
             const CardWrapper = needsDocs ? Link : "div";
             const cardProps = needsDocs
@@ -154,13 +174,15 @@ export default function ClientPoliciesPage() {
                 className={cn(
                   "block bg-white rounded-xl border p-5 shadow-sm",
                   isRejected && "border-red-100 bg-red-50/30",
-                  needsDocs && "border-orange-200 bg-orange-50/20 hover:shadow-md hover:border-orange-300 transition-all cursor-pointer"
+                  needsDocs && "border-orange-200 bg-orange-50/20 hover:shadow-md hover:border-orange-300 transition-all cursor-pointer",
+                  isUnderReview && "border-blue-100 bg-blue-50/20"
                 )}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     {isRejected && <XCircle size={16} className="text-red-400 flex-shrink-0" />}
                     {needsDocs && <AlertTriangle size={16} className="text-orange-400 flex-shrink-0" />}
+                    {isUnderReview && <Clock size={16} className="text-blue-400 flex-shrink-0" />}
                     <div>
                       <p className="font-semibold text-gray-900">{product?.label ?? proposal.productType}</p>
                       <p className="text-xs text-gray-400 mt-0.5">Application · {formatDate(proposal.createdAt)}</p>

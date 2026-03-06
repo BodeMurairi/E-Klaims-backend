@@ -29,7 +29,6 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   ],
   distributor: [
     { label: "Dashboard", href: "/distributor", icon: <LayoutDashboard size={18} /> },
-    { label: "Proposals", href: "/distributor/proposals", icon: <FileText size={18} /> },
     { label: "Policies", href: "/distributor/policies", icon: <Shield size={18} /> },
     { label: "Clients", href: "/distributor/clients", icon: <Users size={18} /> },
   ],

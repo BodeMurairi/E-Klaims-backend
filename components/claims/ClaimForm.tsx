@@ -10,37 +10,36 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { VoiceNoteRecorder } from "./VoiceNoteRecorder";
 import { DocumentUploader } from "@/components/documents/DocumentUploader";
 import { toast } from "sonner";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2;
 
 interface ClaimFormProps {
   clientId: Id<"users">;
   submittedBy: Id<"users">;
   redirectTo: string;
+  defaultPolicyId?: string;
 }
 
-export function ClaimForm({ clientId, submittedBy, redirectTo }: ClaimFormProps) {
+export function ClaimForm({ clientId, submittedBy, redirectTo, defaultPolicyId }: ClaimFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
 
-  const [policyId, setPolicyId] = useState<string>("");
+  const [policyId, setPolicyId] = useState<string>(defaultPolicyId ?? "");
   const [dateOfLoss, setDateOfLoss] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [estimatedLoss, setEstimatedLoss] = useState("");
-  const [voiceTranscript, setVoiceTranscript] = useState("");
-  const [uploadedDocIds, setUploadedDocIds] = useState<Id<"documents">[]>([]);
   const [newClaimId, setNewClaimId] = useState<Id<"claims"> | null>(null);
 
   const policies = useQuery(api.policies.listByClient, { clientId });
   const submitClaim = useMutation(api.claims.submit);
 
-  const handleSubmit = async () => {
+  // Submit claim when advancing to documents step so we have an ID for the uploader
+  const handleAdvance = async () => {
     if (!policyId || !dateOfLoss || !location || !description || !estimatedLoss) {
       toast.error("Please fill all required fields");
       return;
@@ -55,11 +54,10 @@ export function ClaimForm({ clientId, submittedBy, redirectTo }: ClaimFormProps)
         description,
         location,
         estimatedLoss: parseFloat(estimatedLoss),
-        documents: uploadedDocIds,
-        voiceNoteTranscript: voiceTranscript || undefined,
+        documents: [],
       });
-      toast.success(`Claim ${result.claimId} submitted successfully!`);
-      router.push(redirectTo);
+      setNewClaimId(result.id);
+      setStep(2);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to submit claim");
     } finally {
@@ -73,14 +71,14 @@ export function ClaimForm({ clientId, submittedBy, redirectTo }: ClaimFormProps)
     <div className="max-w-2xl mx-auto">
       {/* Step indicator */}
       <div className="flex items-center gap-2 mb-8">
-        {([1, 2, 3] as Step[]).map((s) => (
+        {([1, 2] as Step[]).map((s) => (
           <div key={s} className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${step >= s ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>{s}</div>
-            {s < 3 && <div className={`h-0.5 w-16 ${step > s ? "bg-blue-600" : "bg-gray-200"}`} />}
+            {s < 2 && <div className={`h-0.5 w-16 ${step > s ? "bg-blue-600" : "bg-gray-200"}`} />}
           </div>
         ))}
         <div className="ml-2 text-sm text-gray-500">
-          {step === 1 ? "Incident Details" : step === 2 ? "Voice Note" : "Documents"}
+          {step === 1 ? "Incident Details" : "Upload Documents"}
         </div>
       </div>
 
@@ -125,55 +123,28 @@ export function ClaimForm({ clientId, submittedBy, redirectTo }: ClaimFormProps)
             <Input type="number" value={estimatedLoss} onChange={e => setEstimatedLoss(e.target.value)} placeholder="0.00" min="0" />
           </div>
 
-          <Button className="w-full flex items-center gap-2" onClick={() => setStep(2)} disabled={!policyId || !dateOfLoss || !location || !description || !estimatedLoss}>
-            Next: Voice Note
+          <Button className="w-full flex items-center gap-2" onClick={handleAdvance} disabled={loading || !policyId || !dateOfLoss || !location || !description || !estimatedLoss}>
+            {loading ? "Submitting..." : "Next: Upload Documents"}
             <ChevronRight size={16} />
           </Button>
         </div>
       )}
 
-      {step === 2 && (
-        <div className="space-y-4 bg-white rounded-xl border p-6">
-          <h2 className="text-lg font-semibold text-gray-800">Voice Note (Optional)</h2>
-          <p className="text-sm text-gray-500">Record a voice note narrating what happened. Our AI will transcribe it to ensure no details are missed.</p>
-          <VoiceNoteRecorder onTranscript={setVoiceTranscript} />
-          <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 flex items-center gap-2" onClick={() => setStep(1)}>
-              <ChevronLeft size={16} /> Back
-            </Button>
-            <Button className="flex-1 flex items-center gap-2" onClick={() => setStep(3)}>
-              Next: Documents <ChevronRight size={16} />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
+      {step === 2 && newClaimId && (
         <div className="space-y-4 bg-white rounded-xl border p-6">
           <h2 className="text-lg font-semibold text-gray-800">Upload Documents</h2>
           <p className="text-sm text-gray-500">Upload supporting documents for your claim (police report, photos, estimates, etc.).</p>
 
-          {newClaimId ? (
-            <DocumentUploader
-              entityId={newClaimId}
-              entityType="claim"
-              uploadedBy={submittedBy}
-              onUploaded={docs => setUploadedDocIds(docs.map(d => d.documentId))}
-            />
-          ) : (
-            <div className="text-xs text-gray-400 bg-gray-50 rounded-lg p-4 text-center">
-              Documents will be attached after claim submission. You can also upload from the claim detail page.
-            </div>
-          )}
+          <DocumentUploader
+            entityId={newClaimId}
+            entityType="claim"
+            uploadedBy={submittedBy}
+            label="Upload Claim Documents"
+          />
 
-          <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 flex items-center gap-2" onClick={() => setStep(2)}>
-              <ChevronLeft size={16} /> Back
-            </Button>
-            <Button className="flex-1" onClick={handleSubmit} disabled={loading}>
-              {loading ? "Submitting..." : "Submit Claim"}
-            </Button>
-          </div>
+          <Button className="w-full" onClick={() => router.push(redirectTo)}>
+            Done
+          </Button>
         </div>
       )}
     </div>

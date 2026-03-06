@@ -130,6 +130,9 @@ export default defineSchema({
     assessmentFindings: v.optional(v.string()),
     assessmentRecommendedAmount: v.optional(v.number()),
     rejectionReason: v.optional(v.string()),
+    // Agent-initiated claims — await client confirmation before going to officers
+    pendingClientConfirmation: v.optional(v.boolean()),
+    initiatedByDistributorId: v.optional(v.id("users")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

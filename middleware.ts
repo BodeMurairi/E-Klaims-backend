@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { ROLE_DASHBOARD_PATHS } from "@/lib/constants";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -7,13 +8,29 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/api/webhooks(.*)",
   "/api/onboarding(.*)",
-  "/onboarding(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) return NextResponse.next();
+  const { userId, sessionClaims } = await auth();
+  const path = req.nextUrl.pathname;
 
-  const { userId } = await auth();
+  // If a signed-in user who has already completed onboarding tries to access
+  // /onboarding, redirect them straight to their dashboard.
+  if (path.startsWith("/onboarding")) {
+    if (userId) {
+      const meta = (sessionClaims as any)?.publicMetadata as
+        | { role?: string; onboardingComplete?: boolean }
+        | undefined;
+      if (meta?.onboardingComplete && meta.role && ROLE_DASHBOARD_PATHS[meta.role]) {
+        return NextResponse.redirect(
+          new URL(ROLE_DASHBOARD_PATHS[meta.role], req.url)
+        );
+      }
+    }
+    return NextResponse.next();
+  }
+
+  if (isPublicRoute(req)) return NextResponse.next();
 
   if (!userId) {
     const signInUrl = new URL("/sign-in", req.url);

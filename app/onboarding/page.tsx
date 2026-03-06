@@ -32,6 +32,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<"role" | "profile">("role");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const [profile, setProfile] = useState({
     firstName: "",
@@ -56,6 +57,7 @@ export default function OnboardingPage() {
     if (!user) return;
     const meta = user.publicMetadata as { role?: string; onboardingComplete?: boolean };
     if (meta.onboardingComplete && meta.role && ROLE_DASHBOARD_PATHS[meta.role]) {
+      setIsRedirecting(true);
       window.location.href = ROLE_DASHBOARD_PATHS[meta.role];
     }
   }, [user]);
@@ -153,6 +155,15 @@ export default function OnboardingPage() {
       : ROLE_NEXT_STEPS.default;
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  // Show a plain loader while we wait for Clerk to load or while redirecting
+  if (!user || isRedirecting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">

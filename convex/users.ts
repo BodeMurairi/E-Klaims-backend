@@ -118,6 +118,14 @@ export const completeOnboarding = mutation({
   },
 });
 
+export const getByIds = query({
+  args: { ids: v.array(v.id("users")) },
+  handler: async (ctx, { ids }) => {
+    const results = await Promise.all(ids.map((id) => ctx.db.get(id)));
+    return results.filter(Boolean) as NonNullable<(typeof results)[number]>[];
+  },
+});
+
 export const getByUsername = query({
   args: { username: v.string() },
   handler: async (ctx, { username }) => {
