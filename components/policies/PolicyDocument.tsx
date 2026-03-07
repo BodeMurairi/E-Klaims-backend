@@ -54,7 +54,7 @@ export function PolicyDocument({
           </Button>
           <Button
             size="sm"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600"
             onClick={() => {
               const prev = document.title;
               document.title = `Policy-${policy.policyNumber}`;
@@ -76,7 +76,7 @@ export function PolicyDocument({
         {/* Header */}
         <div className="flex items-start justify-between border-b pb-6 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
               <Shield size={20} className="text-white" />
             </div>
             <div>

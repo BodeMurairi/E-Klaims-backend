@@ -80,7 +80,7 @@ export default function DistributorDashboard() {
         </div>
         <Link
           href="/distributor/onboard"
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors"
         >
           <UserPlus size={16} /> Onboard a Client
         </Link>
@@ -125,7 +125,7 @@ export default function DistributorDashboard() {
               <p className="text-sm text-gray-400 mb-4">No clients yet</p>
               <Link
                 href="/distributor/onboard"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600"
               >
                 <UserPlus size={14} /> Onboard a Client
               </Link>

@@ -91,7 +91,7 @@ function NotificationItem({
     <div>
       <div className="flex items-start gap-2">
         {!notification.read && (
-          <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />
         )}
         <div className={notification.read ? "pl-4" : ""}>
           <p className="text-sm font-medium text-gray-900">{notification.title}</p>

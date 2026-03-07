@@ -74,7 +74,7 @@ export function Sidebar({ role }: SidebarProps) {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-sm">E</span>
           </div>
           <div>
@@ -99,7 +99,7 @@ export function Sidebar({ role }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                 isActive
-                  ? "bg-blue-600 text-white"
+                  ? "bg-brand-500 text-white"
                   : "text-gray-400 hover:bg-gray-800 hover:text-white"
               )}
             >

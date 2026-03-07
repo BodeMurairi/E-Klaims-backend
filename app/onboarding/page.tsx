@@ -159,19 +159,19 @@ export default function OnboardingPage() {
   // Show a plain loader while we wait for Clerk to load or while redirecting
   if (!user || isRedirecting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center">
             <span className="text-white font-bold text-lg">K</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">K-Claims</h1>
@@ -191,9 +191,9 @@ export default function OnboardingPage() {
                   <button
                     key={role.value}
                     onClick={() => handleRoleSelect(role.value as UserRole)}
-                    className="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-400 hover:bg-blue-50 transition-all group"
+                    className="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-brand-500 hover:bg-brand-50 transition-all group"
                   >
-                    <div className="font-medium text-gray-900 group-hover:text-blue-700">{role.label}</div>
+                    <div className="font-medium text-gray-900 group-hover:text-brand-500">{role.label}</div>
                     <div className="text-sm text-gray-500 mt-0.5">{role.description}</div>
                   </button>
                 ))}
@@ -219,7 +219,7 @@ export default function OnboardingPage() {
                     value={profile.firstName}
                     onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))}
                     placeholder="First name"
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
@@ -229,7 +229,7 @@ export default function OnboardingPage() {
                     value={profile.lastName}
                     onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))}
                     placeholder="Last name"
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
                   value={profile.phone}
                   onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
                   placeholder="+250 700 000 000"
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
 
@@ -281,18 +281,18 @@ export default function OnboardingPage() {
                     value={profile.nationalId}
                     onChange={(e) => setProfile((p) => ({ ...p, nationalId: e.target.value }))}
                     placeholder="ID or Passport number"
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               )}
 
               {/* What happens next */}
-              <div className="bg-blue-50 rounded-xl p-4 space-y-2">
-                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">What happens next</p>
+              <div className="bg-brand-50 rounded-xl p-4 space-y-2">
+                <p className="text-xs font-semibold text-brand-500 uppercase tracking-wide">What happens next</p>
                 {nextSteps.map((item, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-blue-700">{item}</p>
+                    <CheckCircle className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-brand-500">{item}</p>
                   </div>
                 ))}
               </div>
@@ -300,7 +300,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleProfileSubmit}
                 disabled={isLoading}
-                className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Setting up your account…</>

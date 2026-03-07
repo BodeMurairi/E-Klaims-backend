@@ -74,7 +74,7 @@ export default function ClientPoliciesPage() {
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
               filter === f.key
-                ? "bg-blue-600 text-white"
+                ? "bg-brand-500 text-white"
                 : "bg-white border text-gray-600 hover:bg-gray-50"
             )}
           >

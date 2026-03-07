@@ -69,14 +69,14 @@ export default function ClientDashboard() {
         <div className="flex items-center gap-3">
           <Link
             href="/client/apply"
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors"
           >
             <Sparkles size={16} />
             Apply for Insurance
           </Link>
           <Link
             href="/client/claims/new"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors"
           >
             <Plus size={16} />
             File a Claim
@@ -180,7 +180,7 @@ export default function ClientDashboard() {
           </div>
           <Link
             href="/client/apply"
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors whitespace-nowrap"
           >
             <Sparkles size={14} />
             Apply for Insurance Product
@@ -218,9 +218,9 @@ export default function ClientDashboard() {
                       const active = i < Math.min(cfg.step, STEPS.length);
                       return (
                         <div key={s} className="flex items-center gap-1 flex-1 min-w-0">
-                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? "bg-blue-600" : "bg-gray-200"}`} />
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? "bg-brand-500" : "bg-gray-200"}`} />
                           {i < STEPS.length - 1 && (
-                            <div className={`h-0.5 flex-1 ${i < cfg.step - 1 ? "bg-blue-600" : "bg-gray-200"}`} />
+                            <div className={`h-0.5 flex-1 ${i < cfg.step - 1 ? "bg-brand-500" : "bg-gray-200"}`} />
                           )}
                         </div>
                       );
@@ -228,7 +228,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex justify-between mt-1">
                     {STEPS.map((s, i) => (
-                      <span key={s} className={`text-xs ${i === Math.min(cfg.step - 1, STEPS.length - 1) ? "text-blue-600 font-medium" : "text-gray-400"}`}>
+                      <span key={s} className={`text-xs ${i === Math.min(cfg.step - 1, STEPS.length - 1) ? "text-brand-500 font-medium" : "text-gray-400"}`}>
                         {s}
                       </span>
                     ))}

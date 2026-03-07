@@ -733,8 +733,8 @@ export default function ApplyPage() {
           {STEP_LABELS.map((label, i) => (
             <div key={label} className="flex flex-col items-center gap-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                i < stepIdx ? "bg-blue-600 text-white" :
-                i === stepIdx ? "bg-blue-600 text-white ring-4 ring-blue-100" :
+                i < stepIdx ? "bg-brand-500 text-white" :
+                i === stepIdx ? "bg-brand-500 text-white ring-4 ring-brand-50" :
                 "bg-gray-200 text-gray-400"
               }`}>
                 {i < stepIdx ? <CheckCircle className="w-4 h-4" /> : i + 1}
@@ -747,7 +747,7 @@ export default function ApplyPage() {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5">
           <div
-            className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
+            className="bg-brand-500 h-1.5 rounded-full transition-all duration-500"
             style={{ width: `${(stepIdx / (STEPS.length - 1)) * 100}%` }}
           />
         </div>
@@ -768,7 +768,7 @@ export default function ApplyPage() {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-2 ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.from === "bot" && (
-                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                   )}
@@ -776,7 +776,7 @@ export default function ApplyPage() {
                     <div className={`px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap ${
                       msg.from === "bot"
                         ? "bg-white border text-gray-800 rounded-tl-none shadow-sm"
-                        : "bg-blue-600 text-white rounded-tr-none"
+                        : "bg-brand-500 text-white rounded-tr-none"
                     }`}>
                       {msg.text.split(/\*\*(.+?)\*\*/).map((part, j) =>
                         j % 2 === 1
@@ -794,7 +794,7 @@ export default function ApplyPage() {
                             onClick={() => handleInput(qr)}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                               qr.includes("Apply") || qr === "1. Get an instant quote"
-                                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                                ? "bg-brand-500 text-white border-blue-600 hover:bg-brand-600"
                                 : "bg-white border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-600"
                             }`}
                           >
@@ -853,12 +853,12 @@ export default function ApplyPage() {
                   placeholder="Type a number or your answer…"
                   className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button onClick={() => handleInput(inputValue)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button onClick={() => handleInput(inputValue)} className="p-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600">
                   <Send className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <button onClick={handleContinueToDocuments} className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2">
+              <button onClick={handleContinueToDocuments} className="w-full py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 flex items-center justify-center gap-2">
                 Continue to Documents <ChevronRight className="w-4 h-4" />
               </button>
             )}
@@ -925,7 +925,7 @@ export default function ApplyPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setStep("chatbot")} disabled={uploadingDocs.size > 0} className="flex-1 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50">Back</button>
-              <button onClick={handleDocumentsNext} disabled={uploadingDocs.size > 0} className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
+              <button onClick={handleDocumentsNext} disabled={uploadingDocs.size > 0} className="flex-1 py-2 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 disabled:opacity-50 flex items-center justify-center gap-2">
                 {uploadingDocs.size > 0 ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</> : <>Continue <ChevronRight className="w-4 h-4" /></>}
               </button>
             </div>
@@ -1004,7 +1004,7 @@ export default function ApplyPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setStep("documents")} className="flex-1 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Back</button>
-              <button onClick={handleSubmit} disabled={isLoading} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
+              <button onClick={handleSubmit} disabled={isLoading} className="flex-1 py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 disabled:opacity-50 flex items-center justify-center gap-2">
                 {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : "Submit Application"}
               </button>
             </div>
@@ -1024,7 +1024,7 @@ export default function ApplyPage() {
               </p>
               <p className="text-xs text-blue-500">Redirecting to your dashboard in a few seconds…</p>
             </div>
-            <button onClick={() => { window.location.href = "/client"; }} className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2">
+            <button onClick={() => { window.location.href = "/client"; }} className="w-full py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 flex items-center justify-center gap-2">
               Go to Dashboard Now <ChevronRight className="w-4 h-4" />
             </button>
           </div>

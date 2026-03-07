@@ -17,7 +17,7 @@ export default function UnderwriterProposalsPage() {
       <div className="flex gap-2 flex-wrap">
         {[{ value: "all", label: "All" }, ...PROPOSAL_STATUSES].map(s => (
           <button key={s.value} onClick={() => setFilter(s.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filter === s.value ? "bg-blue-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filter === s.value ? "bg-brand-500 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>
             {s.label}
           </button>
         ))}

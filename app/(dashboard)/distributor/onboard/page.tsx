@@ -488,11 +488,11 @@ export default function DistributorOnboardPage() {
         <div className="flex items-center gap-2">
           {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2 flex-1 min-w-0">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i < stepIdx ? "bg-blue-600 text-white" : i === stepIdx ? "bg-blue-600 text-white ring-4 ring-blue-100" : "bg-gray-100 text-gray-400"}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i < stepIdx ? "bg-brand-500 text-white" : i === stepIdx ? "bg-brand-500 text-white ring-4 ring-brand-50" : "bg-gray-100 text-gray-400"}`}>
                 {i < stepIdx ? "✓" : i + 1}
               </div>
-              <span className={`text-xs hidden sm:block ${i === stepIdx ? "text-blue-700 font-medium" : "text-gray-400"}`}>{STEP_LABELS[i]}</span>
-              {i < STEPS.length - 1 && <div className={`h-0.5 flex-1 ${i < stepIdx ? "bg-blue-600" : "bg-gray-100"}`} />}
+              <span className={`text-xs hidden sm:block ${i === stepIdx ? "text-brand-500 font-medium" : "text-gray-400"}`}>{STEP_LABELS[i]}</span>
+              {i < STEPS.length - 1 && <div className={`h-0.5 flex-1 ${i < stepIdx ? "bg-brand-500" : "bg-gray-100"}`} />}
             </div>
           ))}
         </div>
@@ -525,7 +525,7 @@ export default function DistributorOnboardPage() {
                     className="flex-1 px-3 py-2 text-sm focus:outline-none"
                   />
                 </div>
-                <button onClick={handleSearch} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2">
+                <button onClick={handleSearch} className="px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 flex items-center gap-2">
                   <Search className="w-4 h-4" /> Find
                 </button>
               </div>
@@ -559,7 +559,7 @@ export default function DistributorOnboardPage() {
                 <p className="text-xs text-gray-500 mb-3">
                   You will prepare an insurance application on behalf of this client. They will receive a confirmation request and must approve before it is submitted for review.
                 </p>
-                <button onClick={handleConfirmClient} className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+                <button onClick={handleConfirmClient} className="w-full py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 flex items-center justify-center gap-2">
                   <ChevronRight className="w-4 h-4" /> Confirm & Start Application
                 </button>
               </div>
@@ -584,10 +584,10 @@ export default function DistributorOnboardPage() {
             <div className="h-[400px] overflow-y-auto border border-gray-100 rounded-xl bg-gray-50 p-4 space-y-3">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-2.5 ${msg.from === "user" ? "flex-row-reverse" : ""}`}>
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${msg.from === "bot" ? "bg-blue-600" : "bg-gray-300"}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${msg.from === "bot" ? "bg-brand-500" : "bg-gray-300"}`}>
                     {msg.from === "bot" ? <Bot className="w-4 h-4 text-white" /> : <User className="w-4 h-4 text-gray-600" />}
                   </div>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.from === "bot" ? "bg-white border border-gray-100 text-gray-800 rounded-tl-sm" : "bg-blue-600 text-white rounded-tr-sm"}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.from === "bot" ? "bg-white border border-gray-100 text-gray-800 rounded-tl-sm" : "bg-brand-500 text-white rounded-tr-sm"}`}>
                     {renderMarkdown(msg.text)}
                     {msg.quickReplies && msg.quickReplies.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-gray-100">
@@ -605,7 +605,7 @@ export default function DistributorOnboardPage() {
             </div>
 
             {convo.phase === "confirmed" ? (
-              <button onClick={() => setStep("documents")} className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2">
+              <button onClick={() => setStep("documents")} className="w-full py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 flex items-center justify-center gap-2">
                 Continue to Documents <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
@@ -618,7 +618,7 @@ export default function DistributorOnboardPage() {
                   placeholder="Type your reply…"
                   className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button onClick={() => handleInput(inputValue)} className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button onClick={() => handleInput(inputValue)} className="px-4 py-2.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600">
                   <Send className="w-4 h-4" />
                 </button>
               </div>
@@ -665,7 +665,7 @@ export default function DistributorOnboardPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setStep("chatbot")} className="flex-1 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Back</button>
-              <button onClick={handleContinueToReview} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2">
+              <button onClick={handleContinueToReview} className="flex-1 py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 flex items-center justify-center gap-2">
                 Review Application <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -726,7 +726,7 @@ export default function DistributorOnboardPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setStep("documents")} className="flex-1 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Back</button>
-              <button onClick={handleSubmit} disabled={isLoading} className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2">
+              <button onClick={handleSubmit} disabled={isLoading} className="flex-1 py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 disabled:opacity-50 flex items-center justify-center gap-2">
                 {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</> : "Send to Client for Approval"}
               </button>
             </div>
@@ -746,7 +746,7 @@ export default function DistributorOnboardPage() {
               </p>
               <p className="text-xs text-blue-500">Redirecting to your dashboard…</p>
             </div>
-            <button onClick={() => { window.location.href = "/distributor"; }} className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+            <button onClick={() => { window.location.href = "/distributor"; }} className="w-full py-2.5 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 flex items-center justify-center gap-2">
               Go to Dashboard <ChevronRight className="w-4 h-4" />
             </button>
           </div>

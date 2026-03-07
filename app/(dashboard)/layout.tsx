@@ -25,7 +25,7 @@ export default async function DashboardLayout({
   if (!role) redirect("/onboarding");
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden print:block print:h-auto print:overflow-visible print:bg-white">
+    <div className="flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible print:bg-white" style={{ backgroundColor: '#FDF1CB' }}>
       <div className="print:hidden">
         <Sidebar role={role} />
       </div>

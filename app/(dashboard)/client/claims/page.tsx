@@ -101,7 +101,7 @@ export default function ClientClaimsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">My Claims</h2>
-        <Link href="/client/claims/new" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+        <Link href="/client/claims/new" className="flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors">
           <Plus size={16} /> File a Claim
         </Link>
       </div>

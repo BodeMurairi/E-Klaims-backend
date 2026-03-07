@@ -73,8 +73,8 @@ export function ClaimForm({ clientId, submittedBy, redirectTo, defaultPolicyId }
       <div className="flex items-center gap-2 mb-8">
         {([1, 2] as Step[]).map((s) => (
           <div key={s} className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${step >= s ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>{s}</div>
-            {s < 2 && <div className={`h-0.5 w-16 ${step > s ? "bg-blue-600" : "bg-gray-200"}`} />}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${step >= s ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-400"}`}>{s}</div>
+            {s < 2 && <div className={`h-0.5 w-16 ${step > s ? "bg-brand-500" : "bg-gray-200"}`} />}
           </div>
         ))}
         <div className="ml-2 text-sm text-gray-500">

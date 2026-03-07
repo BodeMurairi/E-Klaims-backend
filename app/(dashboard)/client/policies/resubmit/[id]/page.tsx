@@ -130,7 +130,7 @@ export default function ResubmitProposalPage({ params }: { params: { id: string 
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+          className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600"
         >
           <Send size={14} />
           {loading ? "Submitting..." : "Submit Documents"}

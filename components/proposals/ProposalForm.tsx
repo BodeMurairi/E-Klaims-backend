@@ -121,8 +121,8 @@ export function ProposalForm({ distributorId, redirectTo }: ProposalFormProps) {
       <div className="flex items-center gap-2 mb-8">
         {([1, 2, 3] as Step[]).map((s) => (
           <div key={s} className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>{s}</div>
-            {s < 3 && <div className={`h-0.5 w-16 ${step > s ? "bg-blue-600" : "bg-gray-200"}`} />}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-400"}`}>{s}</div>
+            {s < 3 && <div className={`h-0.5 w-16 ${step > s ? "bg-brand-500" : "bg-gray-200"}`} />}
           </div>
         ))}
         <span className="ml-2 text-sm text-gray-500">{step === 1 ? "Client & Risk Details" : step === 2 ? "AI Review" : "Documents"}</span>

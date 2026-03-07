@@ -20,7 +20,7 @@ export default function DistributorProposalsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Proposals</h2>
-        <Link href="/distributor/proposals/new" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+        <Link href="/distributor/proposals/new" className="flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600">
           <Plus size={16} /> New Proposal
         </Link>
       </div>
@@ -29,7 +29,7 @@ export default function DistributorProposalsPage() {
       <div className="flex gap-2 flex-wrap">
         {[{ value: "all", label: "All" }, ...PROPOSAL_STATUSES].map(s => (
           <button key={s.value} onClick={() => setFilter(s.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filter === s.value ? "bg-blue-600 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filter === s.value ? "bg-brand-500 text-white" : "bg-white border text-gray-600 hover:bg-gray-50"}`}>
             {s.label}
           </button>
         ))}

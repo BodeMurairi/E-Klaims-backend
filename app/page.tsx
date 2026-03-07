@@ -22,11 +22,11 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-8">
+    <main className="min-h-screen flex flex-col items-center justify-center p-8" style={{ backgroundColor: '#FDF1CB' }}>
       <div className="max-w-4xl w-full text-center space-y-8">
         {/* Logo */}
         <div className="flex items-center justify-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#339493' }}>
             <span className="text-white font-bold text-xl">E</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900">E-Klaims</h1>
@@ -74,13 +74,15 @@ export default async function HomePage() {
         <div className="flex items-center justify-center gap-4 mt-8">
           <Link
             href="/sign-in"
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="px-8 py-3 text-white rounded-lg font-medium transition-colors"
+            style={{ backgroundColor: '#339493' }}
           >
             Sign In
           </Link>
           <Link
             href="/sign-up"
-            className="px-8 py-3 bg-white text-blue-600 rounded-lg font-medium border border-blue-200 hover:bg-blue-50 transition-colors"
+            className="px-8 py-3 text-white rounded-lg font-medium transition-colors"
+            style={{ backgroundColor: '#339493' }}
           >
             Create Account
           </Link>
