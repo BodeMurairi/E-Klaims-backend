@@ -8,6 +8,21 @@ const requiredDocumentSchema = v.object({
   acceptedFormats: v.optional(v.array(v.string())),
 });
 
+const coverageQuestionSchema = v.object({
+  key: v.string(),
+  label: v.string(),
+  fieldType: v.union(
+    v.literal("text"),
+    v.literal("number"),
+    v.literal("select"),
+    v.literal("date"),
+    v.literal("textarea")
+  ),
+  options: v.optional(v.array(v.string())),
+  required: v.boolean(),
+  placeholder: v.optional(v.string()),
+});
+
 export const list = query({
   args: {
     entityType: v.optional(
@@ -56,6 +71,8 @@ export const getForProduct = query({
 export const create = mutation({
   args: {
     productType: v.string(),
+    displayName: v.optional(v.string()),
+    policyDescription: v.optional(v.string()),
     claimType: v.optional(v.string()),
     entityType: v.union(
       v.literal("claim"),
@@ -63,6 +80,7 @@ export const create = mutation({
       v.literal("onboarding")
     ),
     requiredDocuments: v.array(requiredDocumentSchema),
+    coverageQuestions: v.optional(v.array(coverageQuestionSchema)),
     createdBy: v.id("users"),
   },
   handler: async (ctx, args) => {
@@ -78,10 +96,19 @@ export const create = mutation({
 export const update = mutation({
   args: {
     id: v.id("documentRequirements"),
+    displayName: v.optional(v.string()),
+    policyDescription: v.optional(v.string()),
     requiredDocuments: v.array(requiredDocumentSchema),
+    coverageQuestions: v.optional(v.array(coverageQuestionSchema)),
   },
-  handler: async (ctx, { id, requiredDocuments }) => {
-    await ctx.db.patch(id, { requiredDocuments, updatedAt: Date.now() });
+  handler: async (ctx, { id, displayName, policyDescription, requiredDocuments, coverageQuestions }) => {
+    await ctx.db.patch(id, {
+      ...(displayName !== undefined && { displayName }),
+      ...(policyDescription !== undefined && { policyDescription }),
+      ...(coverageQuestions !== undefined && { coverageQuestions }),
+      requiredDocuments,
+      updatedAt: Date.now(),
+    });
   },
 });
 

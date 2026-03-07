@@ -171,6 +171,8 @@ export default defineSchema({
   // ─── DOCUMENT REQUIREMENTS ────────────────────────────────────────────────
   documentRequirements: defineTable({
     productType: v.string(),
+    displayName: v.optional(v.string()),
+    policyDescription: v.optional(v.string()),
     claimType: v.optional(v.string()),
     entityType: v.union(
       v.literal("claim"),
@@ -184,6 +186,24 @@ export default defineSchema({
         required: v.boolean(),
         acceptedFormats: v.optional(v.array(v.string())),
       })
+    ),
+    coverageQuestions: v.optional(
+      v.array(
+        v.object({
+          key: v.string(),
+          label: v.string(),
+          fieldType: v.union(
+            v.literal("text"),
+            v.literal("number"),
+            v.literal("select"),
+            v.literal("date"),
+            v.literal("textarea")
+          ),
+          options: v.optional(v.array(v.string())),
+          required: v.boolean(),
+          placeholder: v.optional(v.string()),
+        })
+      )
     ),
     createdBy: v.id("users"),
     updatedAt: v.number(),
