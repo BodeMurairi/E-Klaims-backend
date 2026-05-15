@@ -80,7 +80,7 @@ export function PolicyDocument({
               <Shield size={20} className="text-white" />
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-900">E-Klaims Insurance</p>
+              <p className="text-lg font-bold text-gray-900">Simlexx Insurance</p>
               <p className="text-xs text-gray-400">Licensed Insurance Provider</p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export function PolicyDocument({
         <div className="border-t pt-4 mt-2 text-xs text-gray-400 space-y-1">
           <p>
             This policy certificate confirms that the above-named policyholder is covered under the terms and
-            conditions of the {product?.label ?? policy.productType} policy issued by E-Klaims Insurance.
+            conditions of the {product?.label ?? policy.productType} policy issued by Simlexx Insurance.
           </p>
           <p>
             Coverage is valid from <strong>{formatDate(policy.startDate)}</strong> to{" "}

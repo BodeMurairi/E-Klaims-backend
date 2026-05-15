@@ -8,7 +8,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "E-Klaims | Insurance Workflow Platform",
+  title: "Simlexx | Insurance Workflow Platform",
   description:
     "Digitize and automate insurance documentation and claims processing",
 };

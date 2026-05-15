@@ -27,9 +27,9 @@ export default async function HomePage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-3">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#339493' }}>
-            <span className="text-white font-bold text-xl">E</span>
+            <span className="text-white font-bold text-xl">S</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900">E-Klaims</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Simlexx</h1>
         </div>
 
         <div className="space-y-4">

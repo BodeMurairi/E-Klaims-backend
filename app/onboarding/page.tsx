@@ -172,9 +172,9 @@ export default function OnboardingPage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">K</span>
+            <span className="text-white font-bold text-lg">S</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">K-Claims</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Simlexx</h1>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -183,7 +183,7 @@ export default function OnboardingPage() {
           {step === "role" && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Welcome to K-Claims</h2>
+                <h2 className="text-xl font-bold text-gray-900">Welcome to Simlexx</h2>
                 <p className="text-sm text-gray-500 mt-1">Select your role to get started.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -207,7 +207,7 @@ export default function OnboardingPage() {
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Complete your profile</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Set up your account details. Your username is your unique identifier on K-Claims.
+                  Set up your account details. Your username is your unique identifier on Simlexx.
                 </p>
               </div>
 

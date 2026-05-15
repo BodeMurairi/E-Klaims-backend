@@ -75,10 +75,10 @@ export function Sidebar({ role }: SidebarProps) {
       <div className="px-6 py-5 border-b border-gray-700">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">E</span>
+            <span className="text-white font-bold text-sm">S</span>
           </div>
           <div>
-            <div className="text-white font-bold text-sm leading-tight">E-Klaims</div>
+            <div className="text-white font-bold text-sm leading-tight">Simlexx</div>
             <div className="text-gray-400 text-xs">{ROLE_LABELS[role]}</div>
           </div>
         </div>
